@@ -1,0 +1,34 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+
+public class MyActivityMng {
+
+	public static final int CHOOSE_ACTIVITY = 0;
+	public static final int SUBMENU_ACTIVITY = 1;
+	
+	public static ArrayList<Activity> mActivityMng;
+	
+	public static void add(int index, Activity mInstance){
+		if (mActivityMng == null)
+			mActivityMng = new  ArrayList<Activity>();
+
+		mActivityMng.add(index, mInstance);
+	}
+	
+	public static void remove(int index) {
+		if (mActivityMng == null || index >= mActivityMng.size())
+			return;
+		
+		mActivityMng.remove(index);
+	}
+	
+	public static Activity getActivity(int index) {
+		if (index >=  mActivityMng.size())
+			return null;
+		
+		return mActivityMng.get(index);
+	}
+}

@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="ratings_title">Please rate the game!</string>
+    <string name="ratings_body1">We hope that you are enjoying our app! Can you please spare a moment to give us a 5 star review?</string>
+    <string name="ratings_body2">We would really appreciate your support of a 5 star rating on the Android Market (last time we bug you, promise)! Can you please rate us 5 stars now on Google Play?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="paidapp_title">Remove Ads and get more levels!</string>
+    <string name="paidapp_body">Have you considered the full version of our app? On top of supporting us, you will get an Ads-free version with many more levels of different sizes! Are you ready now to preview the full version?</string>
+
+</resources>

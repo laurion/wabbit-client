@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Scratch Quiz</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+
+    <!-- more games -->
+    <string name="txt_alphabet">Alphabet</string>
+    <string name="txt_dog_house">Dog House</string>
+    <string name="txt_chicken_ville">Chicken Ville</string>
+    <string name="txt_car_jam">Car Jam</string>
+    
+    <!-- settings -->
+	<string name="txt_sound_on">Sound On</string>
+	<string name="txt_sound_off">Sound Off</string>
+	<string name="txt_music_on">Music On</string>
+	<string name="txt_music_off">Music Off</string>
+	
+	<!-- highscores -->
+	<string name="txt_unlimited">One Quiz</string>
+	<string name="txt_cumulative">Cumulative</string>
+	<string name="txt_3_days">3 Days</string>
+	<string name="txt_all_time">All time</string>
+	
+	<!-- choose activity -->
+	<string name="level_bottom_string">Click here to rate this game!\nIf enough of your really like it,\nwe\'ll make more quizzes soon!</string>
+	<string name="txt_check_songs">Check for new images</string>
+	
+	<!-- submenu activity -->
+	<string name="click_label">Click to play</string>
+	<string name="reset_string">If you want to reset scores &amp;\nre-shuffle this quiz, click here.</string>
+	<string name="randomizing">Randomizing...</string>
+
+	<string name="txt_continue">Continue</string>
+	<string name="txt_go_home">Main menu</string>
+	
+</resources>

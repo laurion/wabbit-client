@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- common -->
+	<dimen name="TopButtonHeight">45dp</dimen>
+	<dimen name="TopTitleMargin">10dp</dimen>
+	<dimen name="BottomButtonWidth">160dp</dimen>
+	<dimen name="BottomButtonHeight">40dp</dimen>
+	<dimen name="ButtonTextSize">20sp</dimen>
+
+	<!-- more games activity -->
+	<dimen name="MoreGameImageSize">90dp</dimen>
+	<dimen name="MoreGameImageMargin">20dp</dimen>
+	<dimen name="MoreGameTextSize">16sp</dimen>
+
+	<!-- setting activity -->
+	<dimen name="SettingFrameMargin">30dp</dimen>
+	<dimen name="SettingOptionSize">80dp</dimen>
+
+	<!-- high scores activity -->
+	<dimen name="ScopeLabelWidth">180dp</dimen>
+	<dimen name="ScopeLabelHeight">30dp</dimen>
+	<dimen name="ScopeTextSize">14sp</dimen>
+	<dimen name="ScopeButtonWidth">70dp</dimen>
+	<dimen name="ScopeButtonHeight">30dp</dimen>
+	<dimen name="HighScoreItemHeight">50dp</dimen>
+
+	<!-- level activity -->
+	<dimen name="LevelTextSize">18sp</dimen>
+	<dimen name="StarTextSize">14sp</dimen>
+	<dimen name="ResetItemTextSize">18sp</dimen>
+	
+	<!-- submenu activity -->
+	<dimen name="SubMenuFrameMargin">15dp</dimen>
+	<dimen name="SubMenuScoreWidth">50dp</dimen>
+	
+	<!-- game activity -->
+	<dimen name="NameButtonTextSize">20sp</dimen>
+	<dimen name="ScratchRadius">20px</dimen>
+	<dimen name="ScratchSize">220dp</dimen>
+
+</resources>

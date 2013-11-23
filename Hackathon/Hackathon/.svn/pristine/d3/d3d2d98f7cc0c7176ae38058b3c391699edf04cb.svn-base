@@ -1,0 +1,60 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <style name="AppBaseTheme" parent="android:Theme.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+
+	<style name="Start_Activity_Button_Style">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">fill_parent</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:layout_weight">1.0</item>
+    </style>
+    
+	<style name="MoreGames_Activity_TextView_Style">
+        <item name="android:layout_width">@dimen/MoreGameImageSize</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/moregames_name_bg</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">@dimen/MoreGameTextSize</item>
+    </style>
+
+	<style name="HighScores_Scope_Button_Style">
+        <item name="android:layout_width">@dimen/ScopeButtonWidth</item>
+        <item name="android:layout_height">@dimen/ScopeButtonHeight</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:background">@drawable/small_button_bg</item>
+        <item name="android:textSize">@dimen/ScopeTextSize</item>
+        <item name="android:layout_marginLeft">10dp</item>
+    </style>
+    
+    <style name="Name_Select_Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">fill_parent</item>
+        <item name="android:layout_margin">3dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/name_btn</item>
+        <item name="android:textSize">@dimen/NameButtonTextSize</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+</resources>

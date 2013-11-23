@@ -1,0 +1,152 @@
+﻿<images>
+    <image>
+        <id>1</id>
+        <name>Acropolis</name>
+		<fileName>Acropolis01.jpg</fileName>
+    </image>
+    <image>
+        <id>2</id>
+        <name>Christo Redentor</name>
+		<fileName>ChristoRedentor01.jpg</fileName>
+    </image>
+    <image>
+        <id>3</id>
+        <name>Canals of Venice</name>
+		<fileName>CanalsofVenice01.jpg</fileName>
+    </image>
+    <image>
+        <id>4</id>
+        <name>Stonehenge</name>
+		<fileName>Stonehenge01.jpg</fileName>
+    </image>
+    <image>
+        <id>5</id>
+        <name>Taj Mahal</name>
+		<fileName>TajMahal01.jpg</fileName>
+    </image>
+    <image>
+        <id>6</id>
+        <name>Easter Island</name>
+		<fileName>EasterIsland01.jpg</fileName>
+    </image>		
+    <image>
+        <id>7</id>
+        <name>Machu Picchu</name>
+		<fileName>MachuPicchu01.jpg</fileName>
+    </image>
+    <image>
+        <id>8</id>
+        <name>Brandenburg Gate</name>
+		<fileName>BrandenburgGate01.jpg</fileName>
+    </image>
+    <image>
+        <id>9</id>
+        <name>Notre Dame</name>
+		<fileName>NotreDame01.jpg</fileName>
+    </image>
+    <image>
+        <id>10</id>
+        <name>Tower of Pisa</name>
+		<fileName>LeaningTowerofPisa01.jpg</fileName>
+    </image>
+    <image>
+        <id>11</id>
+        <name>Eiffel Tower</name>
+		<fileName>EiffelTower01.jpg</fileName>
+    </image>
+    <image>
+        <id>12</id>
+        <name>Pyramids of Egypt</name>
+		<fileName>PyramidsofEgypt01.jpg</fileName>
+    </image>
+    <image>
+        <id>13</id>
+        <name>Colosseum of Rome</name>
+		<fileName>ColosseumofRome01.jpg</fileName>
+    </image>
+    <image>
+        <id>14</id>
+        <name>Arc de Triomphe</name>
+		<fileName>ArcdeTriomphe01.jpg</fileName>
+    </image>
+    <image>
+        <id>15</id>
+        <name>Chichen Itza</name>
+		<fileName>ChichenItza01.jpg</fileName>
+    </image>
+    <image>
+        <id>16</id>
+        <name>Hagia Sophia</name>
+		<fileName>HagiaSophia01.jpg</fileName>
+    </image>		
+    <image>
+        <id>17</id>
+        <name>Gateway Arch</name>
+		<fileName>GatewayArch01.jpg</fileName>
+    </image>
+    <image>
+        <id>18</id>
+        <name>Angkor Wat</name>
+		<fileName>AngkorWat01.jpg</fileName>
+    </image>
+    <image>
+        <id>19</id>
+        <name>Kremlin</name>
+		<fileName>Kremlin01.jpg</fileName>
+    </image>
+    <image>
+        <id>20</id>
+        <name>Sydney Opera House</name>
+		<fileName>SydneyOperaHouse01.jpg</fileName>
+    </image>
+    <image>
+        <id>21</id>
+        <name>Mount Rushmore</name>
+		<fileName>MountRushmore01.jpg</fileName>
+    </image>
+    <image>
+        <id>22</id>
+        <name>The Grand Canyon</name>
+		<fileName>TheGrandCanyon01.jpg</fileName>
+    </image>
+    <image>
+        <id>23</id>
+        <name>The Sphinx</name>
+		<fileName>TheSphinx01.jpg</fileName>
+    </image>
+    <image>
+        <id>24</id>
+        <name>The Forbidden City</name>
+		<fileName>TheForbiddenCity01.jpg</fileName>
+    </image>
+    <image>
+        <id>25</id>
+        <name>Buckingham Palace</name>
+		<fileName>BuckinghamPalace01.jpg</fileName>
+    </image>
+    <image>
+        <id>26</id>
+        <name>Big Ben</name>
+		<fileName>BigBen01.jpg</fileName>
+    </image>		
+    <image>
+        <id>27</id>
+        <name>White House</name>
+		<fileName>WhiteHouse01.jpg</fileName>
+    </image>
+    <image>
+        <id>28</id>
+        <name>Great Wall of China</name>
+		<fileName>GreatWallofChina01.jpg</fileName>
+    </image>
+    <image>
+        <id>29</id>
+        <name>Statue of Liberty</name>
+		<fileName>StatueofLiberty01.jpg</fileName>
+    </image>
+    <image>
+        <id>30</id>
+        <name>Golden Gate Bridge</name>
+		<fileName>GoldenGateBridge01.jpg</fileName>
+    </image>
+</images>

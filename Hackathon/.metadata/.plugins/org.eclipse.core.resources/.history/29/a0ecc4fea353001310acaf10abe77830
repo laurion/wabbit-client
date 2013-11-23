@@ -1,0 +1,63 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import java.io.IOException;
+
+import android.database.SQLException;
+import android.graphics.Typeface;
+import android.widget.Toast;
+
+import com.yoero.base.highscore.LocalHighScoreList;
+import com.yoero.casual.guess.scratch.off.quiz.db.QuizDBHelper;
+
+import yoero.base.bogdev.activities.ActivityBaseAdsIntegrated;
+
+public class ScratchQuizBaseActivity extends ActivityBaseAdsIntegrated{
+	public static String CUSTOM_FONT_NAME = "fonts/Blambot_Casual.ttf";
+	public static String CUSTOM_FONT_NAME_1 = "fonts/Score.ttf";
+	public static Typeface customFont;
+	public static Typeface scoreFont;
+	
+	public static int UNLIMITED_MODE = 1;
+	public static int LIMITED_MODE = 2;
+	
+	public static QuizDBHelper dbHelper;
+	
+	public static LocalHighScoreList HsUnlimited;
+	public static LocalHighScoreList HsLimited;
+	
+	protected void localInitialization(){
+		super.localInitialization();
+		
+		customFont = Typeface.createFromAsset(getApplicationContext().getAssets(), CUSTOM_FONT_NAME);
+		scoreFont = Typeface.createFromAsset(getApplicationContext().getAssets(), CUSTOM_FONT_NAME_1);
+
+		// we need to build db file
+		dbHelper = new QuizDBHelper(this);
+		
+		try {
+        	dbHelper.createDataBase();
+ 
+        } catch(IOException ioe) {
+        	Toast.makeText(this, "Unable to copy database", Toast.LENGTH_LONG).show();
+        	//throw new Error("Unable to create database");
+        }
+ 
+	 	try {
+	 		dbHelper.openDataBase();
+	 	} catch(SQLException sqle) {
+        	Toast.makeText(this, "Unable to open database", Toast.LENGTH_LONG).show();
+	 		//throw sqle;
+	 	}
+	 	
+	 	LocalHighScoreList.initOnlineController("androidws.com", "7aReSDNrpEs=", "PW6eX4t5ki1p2M1A79DGHoFbjbn7R90B", 2, 9, this); // this is Context, iv
+	 	HsUnlimited = new LocalHighScoreList(getApplicationContext(), 1);
+	 	HsLimited = new LocalHighScoreList(getApplicationContext(), 2);
+	}
+	
+	public static LocalHighScoreList getCurrentHighScoreList(int mode) {
+		if (mode == UNLIMITED_MODE)
+			return HsUnlimited;
+		else 
+			return HsLimited;
+	}
+}

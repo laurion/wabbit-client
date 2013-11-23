@@ -1,0 +1,119 @@
+package com.hackathon.remoting;
+
+import java.security.SecureRandom;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+
+import ch.boye.httpclientandroidlib.androidextra.Base64;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.hackathon.abstracts.Enums.LoginResult;
+import com.hackathon.dataholders.LoginDataHolder;
+import com.hackathon.dataholders.StatusDataHolder;
+import com.hackathon.dataholders.UserDataHolder;
+import com.yoero.base.crypto.TimeEncrypter;
+import com.yoero.base.remoting.CallExecutor;
+import com.yoero.base.remoting.CommunicatorBase;
+import com.yoero.base.remoting.IRemoteCallback;
+import com.yoero.base.remoting.RemoteCallHolder;
+
+public class Communicator extends CommunicatorBase {
+	//public static boolean DEBUG = false;
+	
+	private static String mPrivateKey = "ZjbWZZbUgL7VjfSdLvyulLRw41ZrWChk";
+	private static String mSessionKey;
+	private static TimeEncrypter mEnc;
+
+	private static LoginDataHolder LoginData;
+	
+	
+	public static LoginDataHolder getLoginData() {
+		if (LoginData == null) {
+			LoginData = new LoginDataHolder();
+			LoginData.Result = LoginResult.TemporaryBan;
+		}
+
+		return LoginData;
+	}
+
+	private void setLoginData(LoginDataHolder parsedResult) { 
+		LoginData = parsedResult;
+		if (isLoggedIn()) {
+			mAuthCookie = LoginData.AuthCookie;
+		} else {
+			mAuthCookie = null;
+		}
+	}
+
+	public static boolean isLoggedIn() {
+		return getLoginData().Result == LoginResult.Success;
+	}
+
+	// NEEDS TO BE AFTER ALL FREAKING VARIABLES IT'S USING
+	public static Communicator inst;
+
+	public Communicator() {
+		SecureRandom random = new SecureRandom();
+		byte iv[] = new byte[8];
+		random.nextBytes(iv);
+		mSessionKey = Base64.encodeToString(iv, Base64.NO_WRAP);
+
+		mEnc = new TimeEncrypter(mSessionKey, mPrivateKey, true);
+	}
+
+	public void userLogin(IRemoteCallback call, int verNumber, String deviceId, String email, String password) {
+		// you'll only need to write these wrappers that effectivelly do just two things
+		
+		// 1. prepare call by passing caller, method and parameters
+		final RemoteCallHolder req = buildRequest(call, "BingoPublic/UserLoginAndroid", "k", mSessionKey, "d",
+				mEnc.Encrypt(deviceId), "u", mEnc.Encrypt(email), "p", password == null ? null : mEnc.Encrypt(password));
+
+		// 2. pass those parameters into CallExecuter and then define what is done with results after
+		CallExecutor exec = new CallExecutor() {
+			@Override
+			public void process(RemoteCallHolder rch) {
+				setLoginData((LoginDataHolder) rch.parsedResult);
+			}
+		};
+		
+		// 3. Just a small bonus - you pass this, request you've build, and value you are expecting back
+		exec.executeCall(this, req, LoginDataHolder.class);
+	}
+	
+	public void mergeFacebook(IRemoteCallback call, int userid, String fbid){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/MergeFacebook",
+				"uid", LoginData.UserId, "fbid", fbid);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	public void removeFacebook(IRemoteCallback call, int userid){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/RemoveFacebook",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	
+	public void getUserData(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetUserData",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, UserDataHolder.class);
+	}
+	
+	public void setGCMDeviceId(IRemoteCallback call, String GCMDeviceId){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetGCMDeviceId",
+				"uid", LoginData.UserId, "gcmid", GCMDeviceId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+}

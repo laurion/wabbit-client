@@ -1,0 +1,375 @@
+package com.hackathon.remoting;
+
+import java.util.prefs.Preferences;
+
+import org.json.JSONArray;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.text.InputType;
+import android.util.Log;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.hackathon.abstracts.Enums.GeneralResult;
+import com.hackathon.abstracts.Enums.LoginResult;
+import com.hackathon.dataholders.StatusDataHolder;
+import com.hackathon.dataholders.UserDataHolder;
+import com.yoero.base.UtilFunctions;
+import com.yoero.base.remoting.IRemoteCallback;
+import com.yoero.base.remoting.RemoteCallHolder;
+
+public class ClientManager {
+	private static ClientManager instance;
+
+	private Activity mMainAct;
+
+	// Data
+	public UserDataHolder mUserData;
+
+	public static synchronized ClientManager getInstance(Activity activity) {
+		if (instance == null) {
+			instance = new ClientManager(activity);
+		}
+
+		return instance;
+	}
+
+	private ClientManager(final Activity activity) {
+		mMainAct = activity;
+
+		// common one time initializations
+		RemoteCallHolder.initHandler();
+		Communicator.inst = new Communicator();
+	}
+
+	public void destroy() {
+		instance = null;
+	}
+
+	public Communicator getComInst() {
+		return Communicator.inst;
+	}
+
+	public void launchLogin(String userEmail, String userPw) {
+		//Communicator.getLoginData().Result = LoginResult.Logout;
+		//String userEmail = UtilFunctions.getAccountEmail(mMainAct);
+
+		processLogin(userEmail, userPw),
+				mLoginCallBack);
+	}
+
+	private void processLogin(String email, String password,
+			IRemoteCallback pCallBack) {
+		String deviceId = UtilFunctions.getDeviceId(mMainAct);
+		String deviceEmail = UtilFunctions.getAccountEmail(mMainAct);
+
+		getComInst().userLogin(pCallBack,
+				UtilFunctions.getVersionCode(mMainAct),
+				deviceId + "\n" + deviceEmail, email, password);
+	}
+
+	public void mergeWithFacebook(String fbid) {
+		getComInst().mergeFacebook(mMergeFbCallBack,
+				getComInst().getLoginData().UserId, fbid);
+	}
+	public void removeFacebook(IRemoteCallback pCallback){
+		getComInst().removeFacebook(pCallback, getComInst().getLoginData().UserId);
+	}
+
+	public void getInitialSettings(IRemoteCallback pCallback) {
+		getComInst().getInitialSettings(pCallback);
+	}
+
+	public void getUserData(IRemoteCallback pCallBack) {
+		getComInst().getUserData(pCallBack);
+	}
+
+	public void setDauber(int pDauber, IRemoteCallback pCallback) {
+		getComInst().setDauber(pCallback, pDauber);
+	}
+
+	public void setAvatar(int pAvatar, IRemoteCallback pCallback) {
+		getComInst().setAvatar(pCallback, pAvatar);
+	}
+
+	public void buyItem(int pType, int pNr, IRemoteCallback pCallback) {
+		getComInst().buyItem(pCallback, pType, pNr);
+	}
+
+	public void addCoins(int pCoins, IRemoteCallback pCallback) {
+		getComInst().addCoins(pCallback, pCoins);
+	}
+
+	public void changePW(final String oldpw, final String newpw,
+			IRemoteCallback pCallback) {
+		getComInst().changePW(pCallback, oldpw, newpw);
+	}
+
+	public void changeNick(final String nick, IRemoteCallback pCallback) {
+		getComInst().changeNick(pCallback, nick);
+	}
+
+	public void getUserActiveState(IRemoteCallback pCallback) {
+		getComInst().getUserActiveState(pCallback);
+	}
+
+	public void setGCMDeviceId(final String GCMDeviceId) {
+		getComInst().setGCMDeviceId(mGCMDeviceIdCallback, GCMDeviceId);
+	}
+
+	public void getLatestMessages(final int pChatRoom, final int pMinsBefore,
+			IRemoteCallback pCallback) {
+		getComInst().getLatestMessages(pCallback, pChatRoom, pMinsBefore);
+	}
+
+	public void sendMessage(final MessageDataHolder pMsgDataHolder) {
+		getComInst().sendMessage(mOnMsgSent, pMsgDataHolder);
+	}
+
+	public void setRoom(final int pRoom, IRemoteCallback pCallback) {
+		getComInst().setRoom(pCallback, pRoom);
+	}
+
+	public void getSecsUntilGame(final int pRoom, IRemoteCallback pCallback) {
+		getComInst().getSecsUntilGame(pCallback, pRoom);
+	}
+
+	public void joinGame(int room, int nrTickets, boolean extraPowerups, IRemoteCallback pCallback) {
+		getComInst().joinGame(pCallback, room, nrTickets, extraPowerups);
+	}
+
+	public void getFbUsersOnlineState(String pFbIds[], IRemoteCallback pCallback) {
+		JSONArray ids = new JSONArray();
+		for (String id : pFbIds)
+			ids.add(id);
+		getComInst().getFbUsersOnlineState(pCallback, ids);
+	}
+
+	public void getRoomsNrPlayers(IRemoteCallback pCallback) {
+		getComInst().getRoomsNrPlayers(pCallback);
+	}
+
+	public void updateUserScore(UserScoreDataHolder us,
+			IRemoteCallback pCallback) {
+		getComInst().updateUserScore(pCallback, us);
+	}
+
+	public void getScoreBoard(int room, int gameId, int maxItems,
+			IRemoteCallback pCallback) {
+		getComInst().getScoreBoard(pCallback, room, gameId, maxItems);
+	}
+
+	public void getGameStatus(int room, int gameId, IRemoteCallback pCallback) {
+		getComInst().getGameStatus(pCallback, room, gameId);
+	}
+
+	public void getUserStatistics(IRemoteCallback pCallback) {
+		getComInst().getUserStatistics(pCallback);
+	}
+
+	public void drawNr(int room, int gameId, int card, int nr,
+			IRemoteCallback pCallback) {
+		getComInst().drawNr(pCallback, room, gameId, card, nr);
+	}
+
+	public void bingo(int room, int gameId, int card, IRemoteCallback pCallback) {
+		getComInst().bingo(pCallback, room, gameId, card);
+	}
+	
+	public void getExchangeRate(int type, IRemoteCallback pCallback) {
+		getComInst().getExchangeRate(pCallback, type);
+	}
+	public void doExchange(int type, int amount, IRemoteCallback pCallback) {
+		getComInst().doExchange(pCallback, type, amount);
+	}
+	
+	public void getExtraPowerupsCost(int room, IRemoteCallback pCallback) {
+		getComInst().getExtraPowerupsCost(pCallback, room);
+	}
+	
+	public void getPendingNrPlayers(int room, IRemoteCallback pCallback) {
+		getComInst().getPendingNrPlayers(pCallback, room);
+	}
+	
+	public void betOnWheel(int item, int amount, IRemoteCallback pCallback) {
+		getComInst().betOnWheel(pCallback, item, amount);
+	}
+	public void getLeaderBoard(int start, int amount, int type, long ticks, IRemoteCallback pCallback){
+		getComInst().getLeaderBoard(pCallback, start, amount, type, ticks);
+	}
+	public void recoverPassword(IRemoteCallback pCallback){
+		getComInst().recoverPassword(pCallback, UtilFunctions.getAccountEmail(mMainAct));
+	}
+	
+
+	// Login
+	private final IRemoteCallback mLoginCallBack = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			if (Communicator.getLoginData().Result == LoginResult.Success) {
+				getInitialSettings(mInitialSettings);
+			} else if (rch.parsedResult == null) {
+				UtilFunctions.ShowMessageBox(mMainAct, "Server error",
+						"Please try again later or contact technical support!",
+						"OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								mMainAct.finish();
+							}
+						}, null, null, false);
+			} else if (Communicator.getLoginData().Result == LoginResult.UpdateRequired) {
+				ApplicationUpdate.requestUpdate(mMainAct, null);
+			} else if (Communicator.getLoginData().Result == LoginResult.WrongPassword) {
+				AlertDialog alert = new AlertDialog.Builder(mMainAct).create();
+
+				alert.setTitle("Wrong password");
+				alert.setMessage("Please type-in the correct password !");
+
+				// Set an EditText view to get user input
+				final EditText input = new EditText(mMainAct);
+				input.setHint("Password");
+				input.setInputType(InputType.TYPE_CLASS_TEXT
+						| InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+				alert.setView(input);
+				alert.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				    	String pw = input.getText().toString();
+						// Save password
+						Preferences.setPassword(
+								UtilFunctions.getAccountEmail(mMainAct), 
+								pw);
+
+						// Try another login
+						launchLogin();
+				    }
+				 });
+				/*alert.setPositiveButton("Ok",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								String pw = input.getText().toString();
+								// Save password
+								Preferences.setPassword(
+										UtilFunctions.getAccountEmail(mMainAct),
+										pw);
+
+								// Try another login
+								launchLogin();
+
+							}
+						});
+				*/
+				
+				alert.setButton(DialogInterface.BUTTON_NEUTRAL, "Recover password", new DialogInterface.OnClickListener() {
+				     @Override
+				     public void onClick(DialogInterface dialog, int which) {
+				    	 recoverPassword(mRecoverPW);
+				     }
+				});
+				
+				alert.setButton(DialogInterface.BUTTON_NEGATIVE, "No, logout", new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				    	mMainAct.finish(); // Close app
+				    }
+				});
+				/*
+				alert.setNegativeButton("Cancel",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								mMainAct.finish(); // Close app
+							}
+						});
+				*/
+				alert.show();
+			}
+		}
+	};
+
+	// Merge with facebook and then get user data
+	private final IRemoteCallback mMergeFbCallBack = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			StatusDataHolder status = (StatusDataHolder) rch.parsedResult;
+			if (status.Result == GeneralResult.Success
+					|| status.Result == GeneralResult.AlreadyDone) {
+				// Although this line should not "happen"
+				// Download user information and enter main scene
+				getInitialSettings(mInitialSettings);
+			} else {
+				if (onResourceLoadedListener != null) {
+					onResourceLoadedListener.onResourceLoaded();
+					onResourceLoadedListener = null;
+				}
+				Toast.makeText(
+						mMainAct,
+						"Couldn't merge with Facebook account. Please try again later!",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+	};
+
+	// After updating GCMDeviceId in user data
+	private final IRemoteCallback mGCMDeviceIdCallback = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			StatusDataHolder status = (StatusDataHolder) rch.parsedResult;
+		}
+	};
+
+	private final IRemoteCallback mInitialSettings = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			InitialSettingsDataHolder initialSettings = (InitialSettingsDataHolder) rch.parsedResult;
+			if (Communicator.DEBUG)
+				Log.v("initial settings: ", rch.parsedResult.toString());
+
+			mUserData = initialSettings.userData;
+
+			// Set user data
+			Preferences.setUserData(mUserData);
+			// Set global settings
+			Preferences.setGlobalSettings(initialSettings.globalData);
+
+			if (onResourceLoadedListener != null) {
+				onResourceLoadedListener.onResourceLoaded();
+				onResourceLoadedListener = null;
+			}
+			if (onLoginSuccessful != null) {
+				onLoginSuccessful.run();
+				onLoginSuccessful = null;
+			}
+		}
+	};
+
+	// Chat message
+	public IRemoteCallback mOnMsgSent = new IRemoteCallback() {
+
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			StatusDataHolder status = (StatusDataHolder) rch.parsedResult;
+			/* TODO or not todo */
+		}
+	};
+	
+	//Recover password
+	public IRemoteCallback mRecoverPW = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			StatusDataHolder status = (StatusDataHolder) rch.parsedResult;
+			if(status.Result == GeneralResult.Success){
+				Toast.makeText(mMainAct, "Your password has been sent to your Bingo account email", Toast.LENGTH_LONG).show();
+			}
+			else{
+				Toast.makeText(mMainAct, "Failed to send password recover email", Toast.LENGTH_LONG).show();
+			}
+			launchLogin();
+		}
+	};
+}

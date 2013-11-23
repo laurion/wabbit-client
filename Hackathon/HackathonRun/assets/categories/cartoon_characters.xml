@@ -1,0 +1,152 @@
+﻿<images>
+    <image>
+        <id>1</id>
+        <name>Snoopy</name>
+		<fileName>Snoopy01.jpg</fileName>
+    </image>
+    <image>
+        <id>2</id>
+        <name>Buzz Lightyear</name>
+		<fileName>BuzzLightyear01.jpg</fileName>
+    </image>
+    <image>
+        <id>3</id>
+        <name>Winnie The Pooh</name>
+		<fileName>WinnieThePooh01.jpg</fileName>
+    </image>
+    <image>
+        <id>4</id>
+        <name>Donald Duck</name>
+		<fileName>DonaldDuck01.jpg</fileName>
+    </image>
+    <image>
+        <id>5</id>
+        <name>Homer Simpson</name>
+		<fileName>HomerSimpson01.jpg</fileName>
+    </image>
+    <image>
+        <id>6</id>
+        <name>Eeyore</name>
+		<fileName>Eeyore01.jpg</fileName>
+    </image>		
+    <image>
+        <id>7</id>
+        <name>Mr. Incredible</name>
+		<fileName>MrIncredible01.jpg</fileName>
+    </image>
+    <image>
+        <id>8</id>
+        <name>Bugs Bunny</name>
+		<fileName>BugsBunny01.jpg</fileName>
+    </image>
+    <image>
+        <id>9</id>
+        <name>Daffy Duck</name>
+		<fileName>DaffyDuck01.jpg</fileName>
+    </image>
+    <image>
+        <id>10</id>
+        <name>Fred Flintstone</name>
+		<fileName>FredFlintstone01.jpg</fileName>
+    </image>
+    <image>
+        <id>11</id>
+        <name>Woody</name>
+		<fileName>Woody01.jpg</fileName>
+    </image>
+    <image>
+        <id>12</id>
+        <name>SpongeBob</name>
+		<fileName>SpongeBob01.jpg</fileName>
+    </image>
+    <image>
+        <id>13</id>
+        <name>Goofy</name>
+		<fileName>Goofy01.jpg</fileName>
+    </image>
+    <image>
+        <id>14</id>
+        <name>Kung Fu Panda</name>
+		<fileName>KungFuPanda01.jpg</fileName>
+    </image>
+    <image>
+        <id>15</id>
+        <name>Aladdin</name>
+		<fileName>Aladdin01.jpg</fileName>
+    </image>
+    <image>
+        <id>16</id>
+        <name>Ariel</name>
+		<fileName>Ariel01.jpg</fileName>
+    </image>		
+    <image>
+        <id>17</id>
+        <name>Bambi</name>
+		<fileName>Bambi01.jpg</fileName>
+    </image>
+    <image>
+        <id>18</id>
+        <name>Bart Simpson</name>
+		<fileName>BartSimpson01.jpg</fileName>
+    </image>
+    <image>
+        <id>19</id>
+        <name>Jasmine</name>
+		<fileName>Jasmine01.jpg</fileName>
+    </image>
+    <image>
+        <id>20</id>
+        <name>Dumbo</name>
+		<fileName>Dumbo01.jpg</fileName>
+    </image>
+    <image>
+        <id>21</id>
+        <name>Pikachu</name>
+		<fileName>Pikachu01.jpg</fileName>
+    </image>
+    <image>
+        <id>22</id>
+        <name>Scooby Doo</name>
+		<fileName>ScoobyDoo01.jpg</fileName>
+    </image>
+    <image>
+        <id>23</id>
+        <name>Nemo</name>
+		<fileName>Nemo01.jpg</fileName>
+    </image>
+    <image>
+        <id>24</id>
+        <name>Charlie Brown0</name>
+		<fileName>CharlieBrown01.jpg</fileName>
+    </image>
+    <image>
+        <id>25</id>
+        <name>Shrek</name>
+		<fileName>Shrek01.jpg</fileName>
+    </image>
+    <image>
+        <id>26</id>
+        <name>Daisy Duck</name>
+		<fileName>DaisyDuck01.jpg</fileName>
+    </image>
+    <image>
+        <id>27</id>
+        <name>Papa Smurf</name>
+		<fileName>PapaSmurf01.jpg</fileName>
+    </image>
+    <image>
+        <id>28</id>
+        <name>Mickey Mouse</name>
+		<fileName>MickeyMouse01.jpg</fileName>
+    </image>
+    <image>
+        <id>29</id>
+        <name>Lightning McQueen</name>
+		<fileName>LightningMcQueen01.jpg</fileName>
+    </image>
+    <image>
+        <id>30</id>
+        <name>Wreck It Ralph</name>
+		<fileName>WreckItRalph01.jpg</fileName>
+    </image>
+</images>

@@ -1,0 +1,327 @@
+package com.yoero.casual.guess.scratch.off.quiz.db;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+import com.yoero.casual.guess.scratch.off.quiz.R;
+import com.yoero.casual.guess.scratch.off.quiz.data.LevelData;
+import com.yoero.casual.guess.scratch.off.quiz.data.ThingData;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
+
+public class QuizDBHelper extends SQLiteOpenHelper {
+
+    public static final String DB_PATH = "/data/data/com.yoero.casual.guess.scratch.off.quiz/databases/";
+	public static final String DB_NAME = "scratch.db";
+	private static final int DB_VERSION = 1;
+	//private static final int THING_MAX_COUNT = 30; 
+	
+	private Context mCtx;
+	private SQLiteDatabase myDataBase;
+	 
+	public QuizDBHelper(Context context) {
+		super(context, DB_NAME, null, DB_VERSION);
+		this.mCtx = context;
+	}
+
+	public void createDataBase() throws IOException{
+		boolean dbExist = checkDataBase();
+		
+		if(!dbExist){
+			try{
+				this.getReadableDatabase();
+				copyDataBase(mCtx);
+			}catch(Error e){
+				Toast.makeText(this.mCtx, "Failed to create/copy database.", Toast.LENGTH_LONG).show();
+			}
+		} 
+	}
+	
+	private boolean checkDataBase() {
+		SQLiteDatabase checkDB = null;
+		
+		try{
+			String myPath = DB_PATH + DB_NAME;
+			checkDB = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+		}catch(SQLiteException e){
+    		//e.printStackTrace();
+    	}
+		
+    	if(checkDB != null){
+    		checkDB.close();
+    	}
+    	
+    	return checkDB != null ? true : false;
+	}
+	
+	private void copyDataBase(Context myContext) {
+		int count;
+		String outFileName = DB_PATH + DB_NAME;
+		
+		try {
+			InputStream input  = mCtx.getResources().openRawResource(R.raw.scratch);
+			OutputStream output = new FileOutputStream(outFileName);
+			byte data[] = new byte[1024];
+            while ((count = input.read(data)) != -1) {
+                output.write(data, 0, count);
+            }
+            input.close();
+            output.flush();
+            output.close();
+		}catch (Exception e) {
+        	Toast.makeText(this.mCtx, "error while copying database", Toast.LENGTH_LONG).show();
+        }
+	}
+
+    public void openDataBase() throws SQLException {
+    	//Open the database
+        String myPath = DB_PATH + DB_NAME;
+    	myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
+    }
+
+	public void closeDatabase() {
+    	myDataBase.close();	
+	}
+	
+	
+	@Override
+	public void onCreate(SQLiteDatabase arg0) {
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	}
+	
+	/*****************
+	 *  sql function
+	 *****************/
+	public ArrayList<LevelData> getLevelList() {
+		ArrayList<LevelData> levelList = new ArrayList<LevelData>();
+		LevelData level = null;
+		
+		if (myDataBase != null) {
+			String sql = "SELECT id, level, filename, imageUrl, stars, points, version FROM levels ORDER BY id ASC";
+			Cursor cursor = myDataBase.rawQuery(sql, null);
+			
+			while (cursor.moveToNext()) {
+				level = new LevelData();
+				level.setId(cursor.getInt(0));
+				level.setLevel(cursor.getString(1));
+				level.setFilename(cursor.getString(2));
+				level.setImageUrl(cursor.getString(3));
+				level.setStars(cursor.getInt(4));
+				level.setPoints(cursor.getInt(5));
+				level.setVersion(cursor.getString(6));
+				
+				levelList.add(level);
+			}
+			
+			cursor.close();
+		}
+		return levelList;
+	}
+	
+	public void addCategory(LevelData category) {
+		if (myDataBase != null) {
+			ContentValues newCategory = new ContentValues();
+			newCategory.put("id", category.getId());
+			newCategory.put("level", category.getLevel());
+			newCategory.put("filename", category.getFilename());
+			newCategory.put("imageUrl", category.getImageUrl());
+			newCategory.put("stars", category.getStars());
+			newCategory.put("points", category.getPoints());
+			newCategory.put("version", category.getVersion());
+			
+			myDataBase.insert("levels", null, newCategory);
+		}
+	}
+	
+	public void deleteCategories() {
+		if (myDataBase != null) {
+			myDataBase.delete("levels", null, null);
+		}
+	}
+	
+	public int getLevelStarts(int id) {
+		ArrayList<ThingData> things = getThingList(id);
+		return things.size() * 3;
+	}
+	
+	public ArrayList<ThingData> getThingList(int level) {
+		ArrayList<ThingData> thingList = new ArrayList<ThingData>();
+		ThingData thing = null;
+		
+		if (myDataBase != null) {
+			String sql = "SELECT id, thing, image, stars, points, misses, pecents FROM things where level_id =" + level;
+			Cursor cursor = myDataBase.rawQuery(sql, null);
+			
+			while (cursor.moveToNext()) {
+				thing = new ThingData();
+				thing.setId(cursor.getInt(0));
+				thing.setLevelId(level);
+				thing.setThing(cursor.getString(1));
+				thing.setImage(cursor.getString(2));
+				thing.setStars(cursor.getInt(3));
+				thing.setPoints(cursor.getInt(4));
+				thing.setMisses(cursor.getInt(5));
+				thing.setPecents(cursor.getInt(6));
+				
+				thingList.add(thing);
+			}
+			
+			cursor.close();
+		}
+		return thingList;
+	}
+	
+	public void addImage(ThingData image) {
+		if (myDataBase != null) {
+			ContentValues newCategory = new ContentValues();
+			newCategory.put("id", image.getId());
+			newCategory.put("level_id", image.getLevelId());
+			newCategory.put("thing", image.getThing());
+			newCategory.put("image", image.getImage());
+			
+			myDataBase.insert("things", null, newCategory);
+		}
+	}
+	
+	public void deleteImages() {
+		if (myDataBase != null) {
+			myDataBase.delete("things", null, null);
+		}
+	}
+	
+	public LevelData getLevelById(int id) {
+		LevelData level = new LevelData();
+		if (myDataBase != null) {
+			String sql = "select id, level, stars, points, version from levels where id =" + id;
+			Cursor cursor = myDataBase.rawQuery(sql, null);
+			
+			if (cursor.getCount() == 0)
+				return null;
+			
+			while (cursor.moveToNext()) {
+				level.setId(id);
+				level.setLevel(cursor.getString(1));
+				level.setStars(cursor.getInt(2));
+				level.setPoints(cursor.getInt(3));
+				level.setVersion(cursor.getString(4));
+				break;
+			}
+			
+			cursor.close();
+		}
+		return level;
+	}
+	
+	public void updateThing(int id, int stars, int points, int misses, int pecent) {
+		if (myDataBase != null) {
+			ContentValues updateThing = new ContentValues();
+			updateThing.put("stars", stars);
+			updateThing.put("points", points);
+			updateThing.put("misses", misses);
+			updateThing.put("pecents", pecent);
+			myDataBase.update("things", updateThing, "id = ?", new String[]{Integer.toString(id)});
+		}
+	}
+	
+	public void updateLevel(int id, int stars, int points) {
+		if (myDataBase != null) {
+			ContentValues updateLevel = new ContentValues();
+			updateLevel.put("stars", stars);
+			updateLevel.put("points", points);
+			myDataBase.update("levels", updateLevel, "id = ?", new String[]{Integer.toString(id)});
+		}
+	}
+	
+	public void resetLevelById(int id) {
+		if (myDataBase != null) {
+			// levels table update
+			ContentValues updateLevel = new ContentValues();
+			updateLevel.put("stars", 0);
+			updateLevel.put("points", 0);
+			myDataBase.update("levels", updateLevel, "id = ?", new String[]{Integer.toString(id)});
+			
+			// temporary data save
+			ArrayList<ThingData> things = getThingList(id);
+			int nImageCount = things.size();
+			
+			// generate new position
+			int[] pos = new int[nImageCount];
+			int cnt = 0;
+			int num = 0;
+			Hashtable<Integer, Integer> newPos = new Hashtable<Integer, Integer>();
+			
+			while(true){
+				num = (int)(Math.random() * nImageCount);
+				
+				if (!newPos.containsKey(num)) {
+					newPos.put(num, cnt);
+					pos[cnt] = num;
+					//Log.i("ScratchQuiz", "NewPos (" + cnt + "," + num + ")");
+					cnt++;
+				}
+				
+				if (cnt == nImageCount)
+					break;
+			}
+			
+			// insert new positions
+			for (int i = 0; i <nImageCount ; i++) {
+				ThingData newThing = things.get(pos[i]);
+				ContentValues newValue = new ContentValues();
+				newValue.put("level_id", id);
+				newValue.put("thing", newThing.getThing());
+				newValue.put("image", newThing.getImage());
+				newValue.put("stars", 0);
+				newValue.put("points", 0);
+				newValue.put("misses", 0);
+				newValue.put("pecents", 100);
+				
+				myDataBase.update("things", newValue, "id = ?", new String[]{Integer.toString(things.get(i).getId())});
+			}
+			
+		}
+	}
+	
+	public ArrayList<String> getImages() {
+		ArrayList<String> images = new ArrayList<String>();
+		
+		if (myDataBase != null) {
+			String sql = "SELECT image FROM things";
+			Cursor cursor = myDataBase.rawQuery(sql, null);
+			
+			while (cursor.moveToNext()) {
+				images.add(cursor.getString(0));
+			}
+			
+			cursor.close();
+		}
+		return images;
+	}
+	
+	public void deleteLevelById(int id) {
+		if (myDataBase != null) {
+			myDataBase.delete("levels", "id = ?", new String[]{Integer.toString(id)});
+		}
+	}
+
+	public void deleteThingsById(int id) {
+		if (myDataBase != null) {
+			myDataBase.delete("things", "level_id = ?", new String[]{Integer.toString(id)});
+		}		
+	}
+	
+}

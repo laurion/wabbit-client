@@ -1,0 +1,19 @@
+package com.hackathon.activity;
+
+import com.yoero.base.IGameApp;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+public class BaseActivity extends Activity{
+
+	public void onCreate(Bundle savedExtras){
+		super(savedExtras);
+		if(mActivity.getApplication() instanceof IGameApp){
+			IGameApp app = (IGameApp) mActivity.getApplication();
+			if (app.initializeAppIfNeeded(mActivity)) {
+				localInitialization();
+			}
+		}
+	}
+}

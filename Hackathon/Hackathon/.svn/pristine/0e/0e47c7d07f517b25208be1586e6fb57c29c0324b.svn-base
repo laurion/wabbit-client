@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<color name="white">#FFFFFF</color>			<!-- (255,255,255) -->
+	<color name="black">#000000</color>			<!-- (0,0,0) -->
+	
+	<color name="bright_green">#80FF80</color>
+	
+	<color name="odd_level">#3C3C4B</color>
+	<color name="even_level">#232332</color>
+
+	<color name="gray_level">#808080</color>
+	<color name="yello_level">#FFFF40</color>
+	
+	<color name="yellow_miss">#FFFF40</color>
+	<color name="pink_miss">#FF6060</color>
+</resources>

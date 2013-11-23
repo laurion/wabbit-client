@@ -1,0 +1,61 @@
+package com.yoero;
+
+import android.app.Activity;
+import android.app.Application;
+
+import com.yoero.base.IGameApp;
+import com.yoero.base.LinksUtil;
+import com.yoero.base.RateApp;
+import com.yoero.base.UtilFunctions;
+import com.yoero.base.push.PushFacade;
+import com.yoero.base.rss.RssChecker;
+import com.yoero.casual.guess.scratch.off.quiz.ScratchQuizBaseActivity;
+public class GameApp extends Application implements IGameApp {
+	private static boolean _initialized; 
+	public boolean initializeAppIfNeeded(Activity ctx) {
+		if (!_initialized) {
+			initializeApp(ctx, this);
+			_initialized = true;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static void initializeApp(Activity ctx, Application app) {
+		// FREE Google Play Version
+		
+		LinksUtil.marketType = 0;
+		
+
+		// ads
+//		int daysUsingApp = UtilSettings.hoursSinceFirstStart(ctx) / 24;
+//		if (daysUsingApp > 5)
+//			daysUsingApp = 5;
+//		
+//		AdControllerFullscreen.AdFullViewFloor = 11 - daysUsingApp; // lower to 20 after couple days
+//		AdControllerFullscreen.AdFullViewVariance = 3;
+//		
+//		AdControllerBanner.AdViewFloor = 3;
+//		AdControllerBanner.AdViewVariance = 3;
+		
+//		AdConfig.TEST_MODE = true;
+//		AdNetworkBase.ADS_TEST_MODE = true;
+//		InmobiController.INMOBI_KEY = "4028cbff3b93b240013bf7fb482906ac";
+		
+		// ads
+		ScratchQuizBaseActivity.NO_ADS = !UtilFunctions.froyoOrNewer();
+		
+		
+		PushFacade.setPushWooshId(ctx, "F51C1-A8D1C", "569870227875");
+		
+		// rss
+		RssChecker.START_DISPLAYING_MESSAGES_AFTER_HOURS = 1;
+		
+		// Rate & Full version
+		RateApp.rateAskInHours = 12;
+		
+		RateApp.paidAppOfferInHours = 24*3;
+		RateApp.paidAppPackage = "com.yoero.puzzle.arukone.flow.pro";
+	}
+}

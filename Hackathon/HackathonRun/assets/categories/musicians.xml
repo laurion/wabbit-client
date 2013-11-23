@@ -1,0 +1,152 @@
+﻿<images>
+    <image>
+        <id>1</id>
+        <name>Kanye West</name>
+		<fileName>KanyeWest01.jpg</fileName>
+    </image>
+    <image>
+        <id>2</id>
+        <name>Gwen Stefani</name>
+		<fileName>GwenStefani01.jpg</fileName>
+    </image>
+    <image>
+        <id>3</id>
+        <name>Blake Shelton</name>
+		<fileName>BlakeShelton01.jpg</fileName>
+    </image>
+    <image>
+        <id>4</id>
+        <name>Eminem</name>
+		<fileName>Eminem01.jpg</fileName>
+    </image>
+    <image>
+        <id>5</id>
+        <name>Britney Spears</name>
+		<fileName>BritneySpears02.jpg</fileName>
+    </image>
+    <image>
+        <id>6</id>
+        <name>Enrique Iglesias</name>
+		<fileName>EnriqueIglesias01.jpg</fileName>
+    </image>		
+    <image>
+        <id>7</id>
+        <name>Alicia Keys</name>
+		<fileName>AliciaKeys01.jpg</fileName>
+    </image>
+    <image>
+        <id>8</id>
+        <name>Carrie Underwood</name>
+		<fileName>CarrieUnderwood01.jpg</fileName>
+    </image>
+    <image>
+        <id>9</id>
+        <name>Justin Timberlake</name>
+		<fileName>JustinTimberlake02.jpg</fileName>
+    </image>
+    <image>
+        <id>10</id>
+        <name>Christina Aguilera</name>
+		<fileName>ChristinaAguilera01.jpg</fileName>
+    </image>
+    <image>
+        <id>11</id>
+        <name>Lady Gaga</name>
+		<fileName>LadyGaga01.jpg</fileName>
+    </image>
+    <image>
+        <id>12</id>
+        <name>Adam Levine</name>
+		<fileName>AdamLevine01.jpg</fileName>
+    </image>
+    <image>
+        <id>13</id>
+        <name>Jennifer Lopez</name>
+		<fileName>JenniferLopez01.jpg</fileName>
+    </image>
+    <image>
+        <id>14</id>
+        <name>Katy Perry</name>
+		<fileName>KatyPerry01.jpg</fileName>
+    </image>
+    <image>
+        <id>15</id>
+        <name>Nicki Minaj</name>
+		<fileName>NickiMinaj01.jpg</fileName>
+    </image>
+    <image>
+        <id>16</id>
+        <name>Psy</name>
+		<fileName>Psy01.jpg</fileName>
+    </image>		
+    <image>
+        <id>17</id>
+        <name>Jay-Z</name>
+		<fileName>Jay-Z01.jpg</fileName>
+    </image>
+    <image>
+        <id>18</id>
+        <name>Taylor Swift</name>
+		<fileName>TaylorSwift01.jpg</fileName>
+    </image>
+    <image>
+        <id>19</id>
+        <name>Usher</name>
+		<fileName>Usher01.jpg</fileName>
+    </image>
+    <image>
+        <id>20</id>
+        <name>Shakira</name>
+		<fileName>Shakira01.jpg</fileName>
+    </image>
+    <image>
+        <id>21</id>
+        <name>Adele</name>
+		<fileName>Adele01.jpg</fileName>
+    </image>
+    <image>
+        <id>22</id>
+        <name>LilWayne</name>
+		<fileName>LilWayne01.jpg</fileName>
+    </image>
+    <image>
+        <id>23</id>
+        <name>Cee Lo Green</name>
+		<fileName>CeeLoGreen01.jpg</fileName>
+    </image>
+    <image>
+        <id>24</id>
+        <name>Beyonce</name>
+		<fileName>Beyonce01.jpg</fileName>
+    </image>
+    <image>
+        <id>25</id>
+        <name>Rihanna</name>
+		<fileName>Rihanna01.jpg</fileName>
+    </image>
+    <image>
+        <id>26</id>
+        <name>Chris Brown</name>
+		<fileName>ChrisBrown01.jpg</fileName>
+    </image>		
+    <image>
+        <id>27</id>
+        <name>Demi Lovato</name>
+		<fileName>DemiLovato01.jpg</fileName>
+    </image>
+    <image>
+        <id>28</id>
+        <name>Justin Bieber</name>
+		<fileName>JustinBieber01.jpg</fileName>
+    </image>
+    <image>
+        <id>29</id>
+        <name>Bono</name>
+		<fileName>Bono01.jpg</fileName>
+    </image>
+    <image>
+        <id>30</id>
+        <name>Mariah Carey</name>
+		<fileName>MariahCarey01.jpg</fileName>
+    </image>
+</images>

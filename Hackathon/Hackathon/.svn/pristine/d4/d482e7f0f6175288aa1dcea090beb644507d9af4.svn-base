@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/black_bg"
+    android:orientation="vertical" >
+	   
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="1.0"
+	    android:orientation="horizontal"
+	    android:gravity="center_vertical">
+	    <ImageButton
+	        android:id="@+id/btnBack"
+	        android:layout_width="0dp"
+	        android:layout_height="@dimen/TopButtonHeight"
+	        android:background="@drawable/back_btn"
+	        android:layout_weight="1.0"/>
+	    <TextView
+	        android:id="@+id/tvLevel"
+	        android:layout_width="0dp"
+	        android:layout_height="@dimen/TopButtonHeight"
+	        android:layout_marginLeft="@dimen/TopTitleMargin"
+	        android:layout_marginRight="@dimen/TopTitleMargin"
+	        android:background="@drawable/empty_label"
+	        android:gravity="center"
+	        android:textSize="20sp"
+	        android:textColor="#FFFFFF"
+	        android:layout_weight="2.0"/>
+	    <ImageButton
+	        android:id="@+id/btnRate"
+	        android:layout_width="0dp"
+	        android:layout_height="@dimen/TopButtonHeight"
+	        android:background="@drawable/rate_btn"
+	        android:layout_weight="1.0"/>
+	</LinearLayout>
+	
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="4.6"
+	    android:orientation="vertical">
+	    
+		<TextView 
+	         android:id="@+id/tvStars"
+	         android:gravity="center"
+	         android:background="#000000"
+	         android:textColor="#FFFFFF"
+	         android:textSize="@dimen/ScopeTextSize"
+	         android:paddingTop="5dp"
+	         android:paddingBottom="5dp"
+	         android:layout_width="match_parent"
+	         android:layout_height="wrap_content"/>
+		
+	    <ListView
+	    	android:id="@+id/lvThings"
+	    	android:layout_marginTop="20dp"
+	    	android:layout_marginLeft="@dimen/SubMenuFrameMargin"
+	    	android:layout_marginRight="@dimen/SubMenuFrameMargin"	    
+	    	android:layout_width="fill_parent"
+	    	android:layout_height="wrap_content"
+	    	android:fadingEdge="none"
+			android:background="@drawable/setting_frame"/>
+	</LinearLayout>
+
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="0.4"
+	    android:gravity="center"
+	    android:orientation="horizontal">
+	</LinearLayout>
+
+</LinearLayout>

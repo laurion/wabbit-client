@@ -1,0 +1,58 @@
+<categories>
+	<category>
+		<id>1</id>
+		<name>Celebrities</name>
+		<filename>celebrities.jpg</filename>
+		<imagesUrl>categories/celebrities.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>2</id>
+		<name>Cartoon Characters</name>
+		<filename>cartooncharacters.jpg</filename>
+		<imagesUrl>categories/cartoon_characters.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>3</id>
+		<name>Musicians</name>
+		<filename>musicians.jpg</filename>
+		<imagesUrl>categories/musicians.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>	
+	<category>
+		<id>4</id>
+		<name>Movies</name>
+		<filename>movies.jpg</filename>
+		<imagesUrl>categories/movies.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>5</id>
+		<name>Video Games</name>
+		<filename>videogames.jpg</filename>
+		<imagesUrl>categories/video_games.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>6</id>
+		<name>Famous Landmarks</name>
+		<filename>famouslandmarks.jpg</filename>
+		<imagesUrl>categories/famous_landmarks.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>7</id>
+		<name>Foods</name>
+		<filename>foods.jpg</filename>
+		<imagesUrl>categories/foods.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>
+	<category>
+		<id>8</id>
+		<name>Celebrities2</name>
+		<filename>celebrities2.jpg</filename>
+		<imagesUrl>categories/celebrities2.xml</imagesUrl>
+		<version>1.0.1</version>
+	</category>	
+</categories>

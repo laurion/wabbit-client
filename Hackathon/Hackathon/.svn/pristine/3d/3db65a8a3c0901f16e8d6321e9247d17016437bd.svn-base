@@ -1,0 +1,152 @@
+﻿<images>
+    <image>
+        <id>1</id>
+        <name>Johnny Depp</name>
+		<fileName>JohnnyDepp01.jpg</fileName>
+    </image>
+    <image>
+        <id>2</id>
+        <name>Jennifer Lawrence</name>
+		<fileName>JenniferLawrence01.jpg</fileName>
+    </image>
+    <image>
+        <id>3</id>
+        <name>Alec Baldwin</name>
+		<fileName>AlecBaldwin01.jpg</fileName>
+    </image>
+    <image>
+        <id>4</id>
+        <name>Blake Lively</name>
+		<fileName>BlakeLively01.jpg</fileName>
+    </image>
+    <image>
+        <id>5</id>
+        <name>Dakota Fanning</name>
+		<fileName>DakotaFanning01.jpg</fileName>
+    </image>
+    <image>
+        <id>6</id>
+        <name>Kate Hudson</name>
+		<fileName>KateHudson01.jpg</fileName>
+    </image>		
+    <image>
+        <id>7</id>
+        <name>Betty White</name>
+		<fileName>BettyWhite01.jpg</fileName>
+    </image>
+    <image>
+        <id>8</id>
+        <name>Antonio Banderas</name>
+		<fileName>AntonioBanderas01.jpg</fileName>
+    </image>
+    <image>
+        <id>9</id>
+        <name>Nicole Kidman</name>
+		<fileName>NicoleKidman01.jpg</fileName>
+    </image>
+    <image>
+        <id>10</id>
+        <name>Harrison Ford</name>
+		<fileName>HarrisonFord01.jpg</fileName>
+    </image>
+    <image>
+        <id>11</id>
+        <name>Christian Bale</name>
+		<fileName>ChristianBale01.jpg</fileName>
+    </image>
+    <image>
+        <id>12</id>
+        <name>Gerard Butler</name>
+		<fileName>GerardButler01.jpg</fileName>
+    </image>
+    <image>
+        <id>13</id>
+        <name>Catherine Zeta Jones</name>
+		<fileName>CatherineZetaJones01.jpg</fileName>
+    </image>
+    <image>
+        <id>14</id>
+        <name>Emma Stone</name>
+		<fileName>EmmaStone01.jpg</fileName>
+    </image>
+    <image>
+        <id>15</id>
+        <name>Mila Kunis</name>
+		<fileName>MilaKunis01.jpg</fileName>
+    </image>
+    <image>
+        <id>16</id>
+        <name>Bradley Cooper</name>
+		<fileName>BradleyCooper01.jpg</fileName>
+    </image>		
+    <image>
+        <id>17</id>
+        <name>Reese Witherspoon</name>
+		<fileName>ReeseWitherspoon01.jpg</fileName>
+    </image>
+    <image>
+        <id>18</id>
+        <name>Russell Brand</name>
+		<fileName>RussellBrand01.jpg</fileName>
+    </image>
+    <image>
+        <id>19</id>
+        <name>Julia Roberts</name>
+		<fileName>JuliaRoberts01.jpg</fileName>
+    </image>
+    <image>
+        <id>20</id>
+        <name>Olivia Wilde</name>
+		<fileName>OliviaWilde01.jpg</fileName>
+    </image>
+    <image>
+        <id>21</id>
+        <name>Al Pacino</name>
+		<fileName>AlPacino01.jpg</fileName>
+    </image>
+    <image>
+        <id>22</id>
+        <name>Amy Adams</name>
+		<fileName>AmyAdams01.jpg</fileName>
+    </image>
+    <image>
+        <id>23</id>
+        <name>Adam Sandler</name>
+		<fileName>AdamSandler01.jpg</fileName>
+    </image>
+    <image>
+        <id>24</id>
+        <name>Zac Efron</name>
+		<fileName>ZacEfron01.jpg</fileName>
+    </image>
+    <image>
+        <id>25</id>
+        <name>Natalie Portman</name>
+		<fileName>NataliePortman01.jpg</fileName>
+    </image>		
+    <image>
+        <id>26</id>
+        <name>Daniel Craig</name>
+		<fileName>DanielCraig01.jpg</fileName>
+    </image>
+    <image>
+        <id>27</id>
+        <name>Colin Farrell</name>
+		<fileName>ColinFarrell01.jpg</fileName>
+    </image>
+    <image>
+        <id>28</id>
+        <name>Clive Owen</name>
+		<fileName>CliveOwen01.jpg</fileName>
+    </image>
+    <image>
+        <id>29</id>
+        <name>Gwyneth Paltrow</name>
+		<fileName>GwynethPaltrow01.jpg</fileName>
+    </image>
+    <image>
+        <id>30</id>
+        <name>Ben Stiller</name>
+		<fileName>BenStiller01.jpg</fileName>
+    </image>
+</images>

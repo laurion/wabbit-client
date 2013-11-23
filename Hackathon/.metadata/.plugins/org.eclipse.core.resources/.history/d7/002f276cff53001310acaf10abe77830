@@ -1,0 +1,24 @@
+package com.yoero.bingo.data.holders;
+
+import java.util.ArrayList;
+
+import com.yoero.base.dataholders.BaseJsonObject;
+
+import android.util.Base64DataException;
+
+public class UserDataHolder extends BaseJsonObject {
+	public int AppUserId;
+	
+	public int NrCoins;
+    public int NrTickets;
+    public int CurrentAvatar;
+    public int CurrentDauber;
+    public String FacebookId;
+    public int CurrentLevel;
+    public int LevelCompletion;
+    public String GCMDeviceId;
+    
+    public ArrayList <Integer> Items1;
+    public ArrayList <Integer> Items2;
+    
+}

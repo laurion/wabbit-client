@@ -1,0 +1,548 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.RotateAnimation;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.yoero.casual.guess.scratch.off.quiz.data.LevelData;
+import com.yoero.casual.guess.scratch.off.quiz.data.ThingData;
+
+public class GameActivity extends Activity implements OnClickListener {
+
+	public static final String TAG = "ScratchQuiz";
+	public static final int NAME_BUTTON_COUNT = 6;
+	
+	private static GameActivity mInstance;
+	
+	private LinearLayout llGameScreen;
+	private LinearLayout llPauseScreen;
+	
+	private Typeface customFont;
+	private Typeface scoreFont;
+	private TextView tvMisses;
+	private TextView tvPecent;
+
+	private RelativeLayout llPhoto;
+	private LinearLayout llButtons;
+	private Button[] btnNames = new Button[NAME_BUTTON_COUNT];
+	private TranslateAnimation[] transAnim = new TranslateAnimation[NAME_BUTTON_COUNT];
+	private String[] names = new String[NAME_BUTTON_COUNT];
+	private RotateAnimation leftRotateAnim;
+	private RotateAnimation rightRotateAnim;
+
+	private LinearLayout llResult;
+	private TextView tvThingName;
+	private ImageButton btnPrev;
+	private ImageButton btnNext;
+	private ImageView ivStar1;
+	private ImageView ivStar2;
+	private ImageView ivStar3;
+	private TextView tvScore;
+	
+	private LevelData mLevelData;
+	private ArrayList<ThingData> things;
+	private String mRightName;
+	private int mLevelId = 1;
+	private int mThingPos = 0;
+	private int mMisses = 0;
+	private int mPecent = 100;
+	private int mCurButton = 0;
+	
+	private ScaleAnimation zoomAnim;
+	private CanvasView canvasView;
+	private Drawable photo;
+	private boolean bComplete = false;
+
+	private int nImageCount = 0; 
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.game);
+		
+		mInstance = this;
+		MainApplication mainApp = (MainApplication)getApplication();
+		customFont = mainApp.customFont;
+		scoreFont = mainApp.scoreFont;
+		
+		
+		mLevelId = getIntent().getIntExtra("LEVEL_ID", 1);
+		mThingPos = getIntent().getIntExtra("THING_POSITION", 0);
+		mLevelData = MainApplication.dbHelper.getLevelById(mLevelId);
+		things = MainApplication.dbHelper.getThingList(mLevelId);
+		
+		nImageCount = things.size();
+		
+		mMisses = things.get(mThingPos).getMisses();
+		mPecent = things.get(mThingPos).getPecents();
+
+		initLayout();
+		
+		checkComplete();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		if (canvasView != null)
+			canvasView.freeBitmap();
+		photo = null;
+	}
+
+	public static GameActivity getInstance() {
+		return mInstance;
+	}
+	
+	private void checkComplete() {
+		ThingData thing = things.get(mThingPos);
+		if (thing.getStars() == 0 && thing.getPoint() == 0 && thing.getMisses() == 0 && thing.getPecents() == 100)
+			bComplete = false;
+		else
+			bComplete = true;
+		
+		if (bComplete) {
+			mRightName = things.get(mThingPos).getThing();
+			mMisses = things.get(mThingPos).getMisses();
+			mPecent = things.get(mThingPos).getPecents();
+			addPhotoView();
+			showMisses();
+			showPecent();
+			showResult();
+		}
+		else
+			updateNewThing();
+	}
+	
+	/**
+	 * Initialize the views.
+	 */
+	private void initLayout() {
+		llGameScreen = (LinearLayout)findViewById(R.id.llGameScreen);
+		
+		ImageButton btnBack = (ImageButton)findViewById(R.id.btnBack);
+		btnBack.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
+		tvMisses = (TextView)findViewById(R.id.tvMisses);
+		tvMisses.setText(mMisses + " Misses");
+		tvMisses.setTypeface(customFont);
+		
+		tvPecent = (TextView)findViewById(R.id.tvPecent);
+		tvPecent.setText(mPecent + "%");
+		tvPecent.setTypeface(scoreFont);
+		
+		llPhoto = (RelativeLayout)findViewById(R.id.llPhoto);
+		llButtons = (LinearLayout)findViewById(R.id.llButtons);
+		btnNames[0] = (Button)findViewById(R.id.btnName1);
+		btnNames[0].setOnClickListener(this);
+		btnNames[1] = (Button)findViewById(R.id.btnName2);
+		btnNames[1].setOnClickListener(this);
+		btnNames[2] = (Button)findViewById(R.id.btnName3);
+		btnNames[2].setOnClickListener(this);
+		btnNames[3] = (Button)findViewById(R.id.btnName4);
+		btnNames[3].setOnClickListener(this);
+		btnNames[4] = (Button)findViewById(R.id.btnName5);
+		btnNames[4].setOnClickListener(this);
+		btnNames[5] = (Button)findViewById(R.id.btnName6);
+		btnNames[5].setOnClickListener(this);
+		
+		llResult = (LinearLayout)findViewById(R.id.llResult);
+		tvThingName = (TextView)findViewById(R.id.tvThingName);
+		tvThingName.setTypeface(customFont);
+		btnPrev = (ImageButton)findViewById(R.id.btnPrev);
+		btnPrev.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				if (mThingPos == 0) {
+					finish();
+				} else {
+					mThingPos--;
+					checkComplete();
+				}
+			}
+		});
+		btnNext = (ImageButton)findViewById(R.id.btnNext);
+		btnNext.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				if (mThingPos == (nImageCount - 1)) {
+					finish();
+				} else {
+					mThingPos++;
+					checkComplete();
+				}
+			}
+		});
+		ivStar1 = (ImageView)findViewById(R.id.ivStar1);
+		ivStar2 = (ImageView)findViewById(R.id.ivStar2);
+		ivStar3 = (ImageView)findViewById(R.id.ivStar3);
+		tvScore = (TextView)findViewById(R.id.tvNewScore);
+		tvScore.setTypeface(customFont);
+
+		for (int i = 0; i < NAME_BUTTON_COUNT; i++) {
+			transAnim[i] = new TranslateAnimation(500.0f , 0.0f, 0.0f, 0.0f);
+			transAnim[i].setDuration(200);
+			transAnim[i].setStartOffset(i * 100);
+		}
+		
+		leftRotateAnim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+		leftRotateAnim.setDuration(500);
+		leftRotateAnim.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				btnNames[mCurButton].setVisibility(View.INVISIBLE);
+				showMisses();
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+			
+		});
+		
+		rightRotateAnim = new RotateAnimation(360.0f, 0.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+		rightRotateAnim.setDuration(500);
+		rightRotateAnim.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				btnNames[mCurButton].setVisibility(View.INVISIBLE);
+				showMisses();
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+			
+		});
+		
+		zoomAnim = new ScaleAnimation(0.95f, 1.08f, 0.95f, 1.08f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+		zoomAnim.setDuration(500);
+		zoomAnim.setRepeatCount(Animation.INFINITE);
+		zoomAnim.setRepeatMode(Animation.REVERSE);
+		
+		llPauseScreen = (LinearLayout)findViewById(R.id.llPauseScreen);
+		ImageButton btnPauseBack = (ImageButton)findViewById(R.id.btnPauseBack);
+		btnPauseBack.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		ImageButton btnSetting = (ImageButton)findViewById(R.id.btnSetting);
+		btnSetting.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(GameActivity.this, SettingsActivity.class);
+				startActivity(intent);
+			}
+		});
+		Button btnMainMenu = (Button)findViewById(R.id.btnMainMenu);
+		btnMainMenu.setTypeface(customFont);
+		btnMainMenu.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				finish();
+				if(MyActivityMng.getActivity(MyActivityMng.SUBMENU_ACTIVITY) != null)
+					MyActivityMng.getActivity(MyActivityMng.SUBMENU_ACTIVITY).finish();
+				if(MyActivityMng.getActivity(MyActivityMng.CHOOSE_ACTIVITY) != null)
+					MyActivityMng.getActivity(MyActivityMng.CHOOSE_ACTIVITY).finish();
+			}
+		});
+		Button btnContinue = (Button)findViewById(R.id.btnContinue);
+		btnContinue.setTypeface(customFont);
+		btnContinue.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				llPauseScreen.setVisibility(View.GONE);
+				llGameScreen.setVisibility(View.VISIBLE);
+			}
+		});
+
+	}
+	
+	private void updateNewThing() {
+		llButtons.setVisibility(View.VISIBLE);
+		llResult.setVisibility(View.GONE);
+		mMisses = 0;
+		mPecent = 100;
+		tvMisses.setText("0 Misses");
+		tvMisses.setTextColor(getResources().getColor(R.color.white));
+		tvPecent.setText("100%");
+		tvPecent.setTextColor(getResources().getColor(R.color.white));
+		
+		setNames();
+		
+		llPhoto.removeAllViews();
+		if (llPhoto.getWidth() ==0 || llPhoto.getHeight() == 0) {
+			new Handler().postDelayed(new Runnable() {
+				public void run() {
+					addPhotoView();
+				}
+			}, 100);
+		} else {
+			addPhotoView();
+		}
+
+	}
+	
+	
+	private void addPhotoView() {
+		Log.i(TAG, "Photo width = " + llPhoto.getWidth() + ", height = " + llPhoto.getHeight());
+		InputStream is;
+		try {
+			is = getApplication().getAssets().open("images/" + things.get(mThingPos).getImage());
+			photo = Drawable.createFromStream(is, "");
+			llPhoto.setBackgroundDrawable(photo);
+			is.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (bComplete == false) {
+			int radius = getResources().getDimensionPixelSize(R.dimen.ScratchRadius);
+			Log.i(TAG, "Scratch radius = " + radius);
+			
+			canvasView = new CanvasView(GameActivity.this, llPhoto.getWidth(), llPhoto.getHeight(), radius);
+			llPhoto.addView(canvasView);
+		}
+	}
+	
+	private void setNames() {
+		genRandomNames();
+		
+		for (int i = 0; i < NAME_BUTTON_COUNT; i++) {
+			btnNames[i].setClickable(true);
+			btnNames[i].setVisibility(View.VISIBLE);
+			btnNames[i].startAnimation(transAnim[i]);
+			btnNames[i].setTypeface(customFont);
+			btnNames[i].setTag(names[i]);
+			btnNames[i].setText(names[i]);
+		}
+	}
+	
+	private void genRandomNames() {
+		mRightName = things.get(mThingPos).getThing();
+		
+		for (int i = 0; i < NAME_BUTTON_COUNT; i++)
+			names[i] = null;
+		
+		int nRightPos = (int)(Math.random() * NAME_BUTTON_COUNT);
+		names[nRightPos] = mRightName;
+		
+		ArrayList<String>  nameList = new ArrayList<String>();
+		for (int i = 0; i < nImageCount; i++) {
+			ThingData thing = things.get(i);
+			if (thing.getStars() == 0 && thing.getPoint() == 0 && thing.getMisses() == 0 && thing.getPecents() == 100)
+				nameList.add(thing.getThing());
+		}
+		
+		if (nameList.size() < 7) {	// button cound is 6.
+			nameList = new ArrayList<String>();
+			for (int i = 0; i < nImageCount; i++) {
+				nameList.add(things.get(i).getThing());
+			}
+		}
+		
+		int nThingCount = nameList.size();
+		
+		for (int i = 0; i < NAME_BUTTON_COUNT; i++) {
+			if (i == nRightPos)
+				continue;
+			
+			while(true) {
+				int ranPos = (int)(Math.random() * nThingCount);
+				String name = nameList.get(ranPos);
+				
+				boolean bNew = true;
+				for (int j = 0; j < NAME_BUTTON_COUNT; j++) {
+					if (names[j] != null && name.equals(names[j])) {
+						bNew = false;
+					}
+				}
+				
+				if (bNew) {
+					names[i] = name;
+					break;
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onClick(View v) {
+		String name = v.getTag().toString();
+		if (name.equals(mRightName)) {
+			showResult();
+			return;
+		}
+
+		mMisses ++;
+		v.setClickable(false);
+		switch(v.getId()) {
+			case R.id.btnName1:
+				mCurButton = 0;
+				v.startAnimation(leftRotateAnim);
+				break;
+			case R.id.btnName3:
+				mCurButton = 2;
+				v.startAnimation(leftRotateAnim);
+				break;
+			case R.id.btnName5:
+				mCurButton = 4;
+				v.startAnimation(leftRotateAnim);
+				break;
+			case R.id.btnName2:
+				mCurButton = 1;
+				v.startAnimation(rightRotateAnim);
+				break;
+			case R.id.btnName4:
+				mCurButton = 3;
+				v.startAnimation(rightRotateAnim);
+				break;
+			case R.id.btnName6:
+				mCurButton = 5;
+				v.startAnimation(rightRotateAnim);
+				break;
+		}
+		
+	}
+
+	private void showMisses() {
+		if (mMisses == 1) 
+			tvMisses.setText("1 Miss");
+		else
+			tvMisses.setText(mMisses + " Misses");
+		
+		if (mMisses == 0)
+			tvMisses.setTextColor(getResources().getColor(R.color.white));
+		else if (mMisses == 1 || mMisses == 2)
+			tvMisses.setTextColor(getResources().getColor(R.color.yellow_miss));
+		else
+			tvMisses.setTextColor(getResources().getColor(R.color.pink_miss));
+	}
+
+	public void updatePecent(int pecent) {
+		mPecent = pecent;
+		showPecent();
+	}
+	
+	private void showPecent() {
+		tvPecent.setText(mPecent + "%");
+		
+		if (mPecent > 80)
+			tvPecent.setTextColor(getResources().getColor(R.color.white));
+		else if (mPecent <= 80 && mPecent >= 60)
+			tvPecent.setTextColor(getResources().getColor(R.color.yellow_miss));
+		else if (mPecent < 60)
+			tvPecent.setTextColor(getResources().getColor(R.color.pink_miss));
+	}
+	
+	private void showResult() {
+		if (bComplete == false)
+			canvasView.freeBitmap();
+		
+		llPhoto.removeAllViews();
+		llButtons.setVisibility(View.GONE);
+		llResult.setVisibility(View.VISIBLE);
+		
+		tvThingName.setText(mRightName);
+		btnNext.startAnimation(zoomAnim);
+		
+		int score = 1000 * (5 - mMisses) / 5 - (100 - mPecent) * 10;
+		int stars = 0;
+		if (score < 0)
+			score = 0;
+		
+		tvScore.setText("Score: " + score + " Pts");
+		
+		if (score >= 800) {
+			ivStar1.setBackgroundResource(R.drawable.yellow_star);
+			ivStar2.setBackgroundResource(R.drawable.yellow_star);
+			ivStar3.setBackgroundResource(R.drawable.yellow_star);
+			stars = 3;
+		} else if(score >= 600) {
+			ivStar1.setBackgroundResource(R.drawable.yellow_star);
+			ivStar2.setBackgroundResource(R.drawable.yellow_star);
+			ivStar3.setBackgroundResource(R.drawable.white_star);
+			stars = 2;
+		} else if(score >= 400) {
+			ivStar1.setBackgroundResource(R.drawable.yellow_star);
+			ivStar2.setBackgroundResource(R.drawable.white_star);
+			ivStar3.setBackgroundResource(R.drawable.white_star);
+			stars = 1;
+		} else {
+			ivStar1.setBackgroundResource(R.drawable.white_star);
+			ivStar2.setBackgroundResource(R.drawable.white_star);
+			ivStar3.setBackgroundResource(R.drawable.white_star);
+			stars = 0;
+		}
+		
+		if (bComplete == false) {
+			MainApplication.dbHelper.updateThing(things.get(mThingPos).getId(), stars, score, mMisses, mPecent);
+			things.get(mThingPos).setStars(stars);
+			things.get(mThingPos).setPoints(score);
+			things.get(mThingPos).setMisses(mMisses);
+			things.get(mThingPos).setPecents(mPecent);
+			
+			if (mLevelData != null) {
+				mLevelData.setStars(mLevelData.getStars() + stars);
+				mLevelData.setPoints(mLevelData.getPoints() + score);
+				MainApplication.dbHelper.updateLevel(mLevelId, mLevelData.getStars(), mLevelData.getPoints());
+			}
+		}
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (llGameScreen.getVisibility() == View.VISIBLE) {
+				llGameScreen.setVisibility(View.GONE);
+				llPauseScreen.setVisibility(View.VISIBLE);
+			} else {
+				finish();
+				if(MyActivityMng.getActivity(MyActivityMng.SUBMENU_ACTIVITY) != null)
+					MyActivityMng.getActivity(MyActivityMng.SUBMENU_ACTIVITY).finish();
+				if(MyActivityMng.getActivity(MyActivityMng.CHOOSE_ACTIVITY) != null)
+					MyActivityMng.getActivity(MyActivityMng.CHOOSE_ACTIVITY).finish();
+			}
+			return true;
+		}
+		
+		return false;
+	}
+}

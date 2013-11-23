@@ -1,0 +1,68 @@
+package com.yoero.casual.guess.scratch.off.quiz.data;
+
+public class LevelData {
+
+	private int id;
+	private String level;
+	private String filename;
+	private String imageUrl;
+	private int stars;
+	private int points;
+	private String version;
+
+	public int getId() {
+		return this.id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getLevel() {
+		return this.level;
+	}
+	
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public String getFilename() {
+		return this.filename;
+	}
+	
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+	
+	public String getImageUrl() {
+		return this.imageUrl;
+	}
+	
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+	
+	public int getStars() {
+		return this.stars;
+	}
+	
+	public void setStars(int stars) {
+		this.stars = stars;
+	}
+	
+	public int getPoints() {
+		return this.points;
+	}
+	
+	public void setPoints(int points) {
+		this.points = points;
+	}
+	
+	public String getVersion() {
+		return this.version;
+	}
+	
+	public void setVersion(String version) {
+		this.version = version;
+	}
+}

@@ -1,0 +1,110 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import android.app.Activity;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+public class SettingsActivity extends Activity implements OnClickListener {
+
+	private ImageButton btnSoundOn;
+	private ImageButton btnSoundOff;
+	private ImageButton btnMusicOn;
+	private ImageButton btnMusicOff;
+	
+	private boolean soundOn = false;
+	private boolean musicOn = false;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.settings);
+		
+		soundOn = QuizPreferences.getPreferences(this).getSoundFlag();
+		musicOn = QuizPreferences.getPreferences(this).getMusicFlag();
+		
+		initLayout();
+		changeOptionLayout();
+	}
+	
+	private void initLayout() {
+		MainApplication mainApp = (MainApplication)getApplication();
+		Typeface customFont = mainApp.customFont;
+		
+		ImageButton btnBack = (ImageButton)findViewById(R.id.btnBack);
+		btnBack.setOnClickListener(this);
+		ImageButton btnSave = (ImageButton)findViewById(R.id.btnSave);
+		btnSave.setOnClickListener(this);
+		
+		btnSoundOn = (ImageButton)findViewById(R.id.btnSoundOn);
+		btnSoundOn.setOnClickListener(this);
+		TextView tvSoundOn = (TextView)findViewById(R.id.tvSoundOn);
+		tvSoundOn.setTypeface(customFont);
+		btnSoundOff = (ImageButton)findViewById(R.id.btnSoundOff);
+		btnSoundOff.setOnClickListener(this);
+		TextView tvSoundOff = (TextView)findViewById(R.id.tvSoundOff);
+		tvSoundOff.setTypeface(customFont);
+		btnMusicOn = (ImageButton)findViewById(R.id.btnMusicOn);
+		btnMusicOn.setOnClickListener(this);
+		TextView tvMusicOn = (TextView)findViewById(R.id.tvMusicOn);
+		tvMusicOn.setTypeface(customFont);
+		btnMusicOff = (ImageButton)findViewById(R.id.btnMusicOff);
+		btnMusicOff.setOnClickListener(this);
+		TextView tvMusicOff = (TextView)findViewById(R.id.tvMusicOff);
+		tvMusicOff.setTypeface(customFont);
+		
+		Button btnAbout = (Button)findViewById(R.id.btnAbout);
+		btnAbout.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch(v.getId()) {
+		case R.id.btnBack:
+			finish();
+			return;
+		case R.id.btnSave:
+			QuizPreferences.getPreferences(this).setSoundFlag(soundOn);
+			QuizPreferences.getPreferences(this).setMusicFlag(musicOn);			
+			finish();
+			return;
+		case R.id.btnAbout:
+			break;
+		case R.id.btnSoundOn:
+			soundOn = true;
+			break;
+		case R.id.btnSoundOff:
+			soundOn = false;
+			break;
+		case R.id.btnMusicOn:
+			musicOn = true;
+			break;
+		case R.id.btnMusicOff:
+			musicOn = false;
+			break;			
+		}
+		changeOptionLayout();
+	}
+
+	private void changeOptionLayout() {
+		if (soundOn) {
+			btnSoundOn.setBackgroundResource(R.drawable.sound_on_1);
+			btnSoundOff.setBackgroundResource(R.drawable.sound_off_0);
+		} else {
+			btnSoundOn.setBackgroundResource(R.drawable.sound_on_0);
+			btnSoundOff.setBackgroundResource(R.drawable.sound_off_1);
+		}
+
+		if (musicOn) {
+			btnMusicOn.setBackgroundResource(R.drawable.music_on_1);
+			btnMusicOff.setBackgroundResource(R.drawable.music_off_0);
+		} else {
+			btnMusicOn.setBackgroundResource(R.drawable.music_on_0);
+			btnMusicOff.setBackgroundResource(R.drawable.music_off_1);
+		}
+	}
+}

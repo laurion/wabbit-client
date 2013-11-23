@@ -1,0 +1,73 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
+import android.widget.TextView;
+
+public class MoreGamesActivity extends Activity implements OnClickListener {
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.more_games);
+		
+		initLayout();
+	}
+
+	/**
+	 * Initialize activity layout.
+	 */
+	private void initLayout() {
+		MainApplication mainApp = (MainApplication)getApplication();
+		Typeface customFont = mainApp.customFont;
+
+		ImageButton btnBtn = (ImageButton)findViewById(R.id.btnBack);
+		btnBtn.setOnClickListener(this);
+		ImageButton btnSetting = (ImageButton)findViewById(R.id.btnSetting);
+		btnSetting.setOnClickListener(this);
+		ImageButton btnMoregame1 = (ImageButton)findViewById(R.id.btnMoregame1);
+		btnMoregame1.setOnClickListener(this);
+		ImageButton btnMoregame2 = (ImageButton)findViewById(R.id.btnMoregame2);
+		btnMoregame2.setOnClickListener(this);
+		ImageButton btnMoregame3 = (ImageButton)findViewById(R.id.btnMoregame3);
+		btnMoregame3.setOnClickListener(this);
+		ImageButton btnMoregame4 = (ImageButton)findViewById(R.id.btnMoregame4);
+		btnMoregame4.setOnClickListener(this);
+		
+		TextView tvMoregame1 = (TextView)findViewById(R.id.tvMoregame1);
+		tvMoregame1.setTypeface(customFont);
+		TextView tvMoregame2 = (TextView)findViewById(R.id.tvMoregame2);
+		tvMoregame2.setTypeface(customFont);
+		TextView tvMoregame3 = (TextView)findViewById(R.id.tvMoregame3);
+		tvMoregame3.setTypeface(customFont);
+		TextView tvMoregame4 = (TextView)findViewById(R.id.tvMoregame4);
+		tvMoregame4.setTypeface(customFont);
+	}
+	
+	@Override
+	public void onClick(View v) {
+		switch(v.getId()) {
+		case R.id.btnBack:
+			finish();
+			break;
+		case R.id.btnSetting:
+			Intent settings = new Intent(MoreGamesActivity.this, SettingsActivity.class);
+			startActivity(settings);
+			break;
+		case R.id.btnMoregame1:
+			break;
+		case R.id.btnMoregame2:
+			break;
+		case R.id.btnMoregame3:
+			break;
+		case R.id.btnMoregame4:
+			break;			
+		}
+	}
+}

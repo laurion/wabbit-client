@@ -1,0 +1,51 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+public class QuizPreferences {
+	
+	private static QuizPreferences preferences;
+	
+	/** The preferences_name. */
+	private static String preferences_name = "com.scratch.quiz";
+	
+	/** The m shared preferences. */
+	SharedPreferences mSharedPreferences;
+	
+	private QuizPreferences(Context context) {
+		mSharedPreferences = context.getSharedPreferences(preferences_name, Context.MODE_PRIVATE);
+	}
+	
+	public static synchronized QuizPreferences getPreferences(Context context) {
+		if (preferences == null) {
+			preferences =  new QuizPreferences(context);
+		}
+		
+		return preferences;
+	}
+	
+	public void setSoundFlag(boolean flag) {
+		mSharedPreferences.edit().putBoolean("SoundValue", flag).commit();
+	}
+
+	public boolean getSoundFlag() {
+		return mSharedPreferences.getBoolean("SoundValue", true);
+	}
+	
+	public void setMusicFlag(boolean flag) {
+		mSharedPreferences.edit().putBoolean("MusicValue", flag).commit();
+	}
+
+	public boolean getMusicFlag() {
+		return mSharedPreferences.getBoolean("MusicValue", true);
+	}
+	
+	public void setUserName(String name) {
+		mSharedPreferences.edit().putString("USER_NAME", name).commit();
+	}
+
+	public String getUserName() {
+		return mSharedPreferences.getString("USER_NAME", "");
+	}
+}

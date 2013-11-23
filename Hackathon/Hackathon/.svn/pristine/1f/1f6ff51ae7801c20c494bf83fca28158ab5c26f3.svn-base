@@ -1,0 +1,88 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+public class StartActivity extends Activity implements OnClickListener {
+
+	public static final int REQUEST_NEW_GAME_ACTIVITY = 1;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.start);
+		
+		initLayout();
+	}
+
+	/**
+	 * Initialize activity layout.
+	 */
+	private void initLayout() {
+		ImageButton btnNewgame = (ImageButton)findViewById(R.id.btnNewgame);
+		btnNewgame.setOnClickListener(this);
+		ImageButton btnSettings = (ImageButton)findViewById(R.id.btnSettings);
+		btnSettings.setOnClickListener(this);
+		ImageButton btnHighscore = (ImageButton)findViewById(R.id.btnHighscore);
+		btnHighscore.setOnClickListener(this);
+		ImageButton btnHelp = (ImageButton)findViewById(R.id.btnHelp);
+		btnHelp.setOnClickListener(this);
+		ImageButton btnMoregames = (ImageButton)findViewById(R.id.btnMoregames);
+		btnMoregames.setOnClickListener(this);
+		ImageButton btnFollowlink = (ImageButton)findViewById(R.id.btnFollowlink);
+		btnFollowlink.setOnClickListener(this);
+		ImageButton btnContactus = (ImageButton)findViewById(R.id.btnContactus);
+		btnContactus.setOnClickListener(this);
+		ImageButton btnShare = (ImageButton)findViewById(R.id.btnShare);
+		btnShare.setOnClickListener(this);
+		ImageButton btnTime = (ImageButton)findViewById(R.id.btnTime);
+		btnTime.setOnClickListener(this);
+	}
+
+	@Override
+	public void onClick(View v) {
+		Intent launch;
+		switch(v.getId()) {
+		case R.id.btnNewgame:
+			launch = new Intent(StartActivity.this, ChooseActivity.class);
+			startActivityForResult(launch, REQUEST_NEW_GAME_ACTIVITY);
+			break;
+		case R.id.btnSettings:
+			launch = new Intent(StartActivity.this, SettingsActivity.class);
+			startActivity(launch);			
+			break;
+		case R.id.btnHighscore:
+			launch = new Intent(StartActivity.this, HighScoresActivity.class);
+			startActivity(launch);			
+			break;
+		case R.id.btnHelp:
+			break;
+		case R.id.btnMoregames:
+			launch = new Intent(StartActivity.this, MoreGamesActivity.class);
+			startActivity(launch);
+			break;
+		case R.id.btnFollowlink:
+			break;
+		case R.id.btnContactus:
+			break;
+		case R.id.btnShare:
+			break;
+		case R.id.btnTime:
+			break;
+		}
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		if (requestCode == REQUEST_NEW_GAME_ACTIVITY && resultCode == ChooseActivity.PARSIONG_ERROR) {
+			Toast.makeText(this, "Category Parsing failed", Toast.LENGTH_SHORT).show();
+		}
+	}
+}

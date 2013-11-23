@@ -1,0 +1,363 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import com.yoero.base.UtilSettings;
+import com.yoero.base.highscore.HighScoreItem;
+import com.yoero.casual.guess.scratch.off.quiz.data.LevelData;
+import com.yoero.casual.guess.scratch.off.quiz.data.ThingData;
+
+import android.R.color;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
+
+public class SubMenuActivity extends Activity implements OnItemClickListener {
+
+	public static final String TAG = "ScratchQuiz";
+	private static final int RANDOMIZING_DLG = 1;
+	private static final int DLG_NAME_SAVE = 2;
+
+	private static final int REQUEST_SCRATCH_ACTIVITY = 1;
+	//private static final int RESET_ITEM_POSITION = 30;
+	private static final int THUMBNAIL_SIZE = 100;
+	
+	private int mLevel; 
+	private Typeface customFont;
+	private ArrayList<ThingData> things;
+	
+	private LayoutInflater mInflater;
+	private TextView tvStarText;
+	
+	private ListView lvThings; 
+	private ThingArrayAdapter mListAdapter;
+	
+	private Bitmap[] bitmaps;
+	private EditText edtName;
+	private int mScore;
+	private boolean mCompleted = false;
+	
+	private int nImageCount = 0;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		MyActivityMng.add(MyActivityMng.SUBMENU_ACTIVITY, this);
+		setContentView(R.layout.sub_menu);
+		
+		MainApplication mainApp = (MainApplication)getApplication();
+		customFont = mainApp.customFont;
+		
+		mLevel = getIntent().getIntExtra("LEVEL_ID", 1);
+		things = MainApplication.dbHelper.getThingList(mLevel);
+		nImageCount = things.size();
+		
+		things.add(new ThingData());	// This is for reset item.
+		Log.i(TAG, "SubMenuActivity thing count = " +things.size());
+		
+		if (nImageCount > 0)
+			bitmaps = new Bitmap[nImageCount];
+		initLayout();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		MyActivityMng.remove(MyActivityMng.SUBMENU_ACTIVITY);
+		
+		for(int i = 0 ; i < nImageCount; i++)
+			if (bitmaps[i] != null)
+				bitmaps[i].recycle();
+	}
+
+	/**
+	 * Initialize the views.
+	 */
+	private void initLayout() {
+		mInflater = getLayoutInflater();
+		
+		ImageButton btnBack = (ImageButton)findViewById(R.id.btnBack);
+		btnBack.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
+		ImageButton btnRate = (ImageButton)findViewById(R.id.btnRate);
+		btnRate.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				
+			}
+		});
+		
+		Intent intent = getIntent();
+		
+		String levelText = intent.getStringExtra("LEVEL_TEXT");
+		int stars = intent.getIntExtra("LEVEL_STARS", 0);
+		int points = intent.getIntExtra("LEVEL_POINTS", 0);
+		
+		TextView tvLevel = (TextView)findViewById(R.id.tvLevel);
+		tvLevel.setText(levelText);
+		tvLevel.setTypeface(customFont);
+		
+		tvStarText = (TextView)findViewById(R.id.tvStars);
+		tvStarText.setTypeface(customFont);
+		tvStarText.setText(stars + " stars, " + points + " points");
+		
+		lvThings = (ListView)findViewById(R.id.lvThings);
+		mListAdapter = new ThingArrayAdapter(this, things);
+		lvThings.setAdapter(mListAdapter);
+		lvThings.setOnItemClickListener(this);
+		
+		mCompleted = checkComplete();
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+		if (position < nImageCount) {
+			Intent intent = new Intent(SubMenuActivity.this, GameActivity.class);
+			intent.putExtra("LEVEL_ID", mLevel);
+			intent.putExtra("THING_POSITION", position);
+			startActivityForResult(intent, REQUEST_SCRATCH_ACTIVITY);
+		} else if (position == nImageCount) {
+			lvThings.setVisibility(View.INVISIBLE);
+			tvStarText.setText("0 stars, 0 points");
+			showDialog(RANDOMIZING_DLG);
+			MainApplication.dbHelper.resetLevelById(mLevel);
+			
+			things = MainApplication.dbHelper.getThingList(mLevel);
+			things.add(new ThingData());	// This is for reset item.
+			
+			for(int i = 0 ; i < nImageCount; i++)
+				if (bitmaps[i] != null) {
+					bitmaps[i].recycle();
+					bitmaps[i] = null;
+				}
+			
+			mListAdapter = new ThingArrayAdapter(this, things);
+			new Handler().postDelayed(new Runnable() {
+				public void run() {
+					removeDialog(RANDOMIZING_DLG);
+					lvThings.setVisibility(View.VISIBLE);
+					lvThings.setAdapter(mListAdapter);
+				}
+			}, 1000);
+		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dlg = null;
+		switch(id) {
+			case RANDOMIZING_DLG:
+				dlg = new Dialog(this);
+				TextView view = new TextView(this);
+				view.setText(getString(R.string.randomizing));
+				view.setTypeface(customFont);
+				view.setTextSize(24);
+				view.setPadding(25, 15, 25, 15);
+				view.setBackgroundColor(color.background_dark);
+				view.setTextColor(getResources().getColor(R.color.yello_level));
+				dlg.requestWindowFeature(Window.FEATURE_NO_TITLE);
+				dlg.setCancelable(false);
+				dlg.setContentView(view);
+				break;
+			case DLG_NAME_SAVE:
+				dlg = new Dialog(this);
+				View layout = mInflater.inflate(R.layout.dlg_input_name, null);
+				
+				TextView tvLable = (TextView) layout.findViewById(R.id.tvLabel);
+				tvLable.setTypeface(customFont);
+				edtName = (EditText) layout.findViewById(R.id.edtName);
+				String username = QuizPreferences.getPreferences(this).getUserName();
+				edtName.setText(username);
+				Button btnOk = (Button) layout.findViewById(R.id.btnOk);
+				btnOk.setTypeface(customFont);
+				btnOk.setOnClickListener(new OnClickListener(){
+					@Override
+					public void onClick(View v) {
+						String strName = edtName.getText().toString().trim();
+						if (!strName.isEmpty()) {
+							QuizPreferences.getPreferences(SubMenuActivity.this).setUserName(strName);
+							UtilSettings.saveSettingsString(SubMenuActivity.this, "PLAYER_NICK_HIGHSCORE", strName);
+							HighScoreItem hi = new HighScoreItem(strName, mScore);
+							MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).addScoreItemAndSave(SubMenuActivity.this, hi);
+							MainApplication.getCurrentHighScoreList(MainApplication.LIMITED_MODE).addScoreItemAndSave(SubMenuActivity.this, hi);
+						}
+						
+						removeDialog(DLG_NAME_SAVE);
+					}
+					
+				});
+				dlg.requestWindowFeature(Window.FEATURE_NO_TITLE);
+				dlg.getWindow().setBackgroundDrawableResource(R.drawable.question_shape);
+				dlg.setContentView(layout);
+				dlg.setCancelable(true);
+				dlg.show();
+				break;
+		}
+		return dlg;
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == REQUEST_SCRATCH_ACTIVITY) {
+			LevelData mLevelData = MainApplication.dbHelper.getLevelById(mLevel);
+			if (mLevelData != null) {
+				tvStarText.setText(mLevelData.getStars() + " stars, " + mLevelData.getPoints() + " points");
+				mScore = mLevelData.getPoints();
+			}
+			
+			things = MainApplication.dbHelper.getThingList(mLevel);
+			things.add(new ThingData());	// This is for reset item.
+			mListAdapter = new ThingArrayAdapter(this, things);
+			lvThings.setAdapter(mListAdapter);
+			
+			if (!mCompleted) {
+				registerScore();
+				mCompleted = checkComplete();
+			}
+		}
+	}
+	
+	private void registerScore() {
+		if (!checkComplete())
+			return;
+		
+		showDialog(DLG_NAME_SAVE);
+	}
+	
+	private boolean checkComplete() {
+		// check all item completed... ?
+		for (int i = 0; i < things.size() - 1; i++) {
+			ThingData thing = things.get(i);
+			
+			if (thing.getStars() == 0 && thing.getPoint() == 0 && thing.getMisses() == 0 && thing.getPecents() == 100)
+				return false;
+		}
+		return true;
+	}
+
+	private Bitmap getScaledBitmap(int index) {
+		InputStream is;
+		try {
+			is = getApplication().getAssets().open("images/" + things.get(index).getImage());
+			Bitmap imageBitmap = BitmapFactory.decodeStream(is);
+			imageBitmap = Bitmap.createScaledBitmap(imageBitmap, THUMBNAIL_SIZE, THUMBNAIL_SIZE, false);
+			
+			is.close();
+			return imageBitmap;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Thing array adapter.
+	 */
+	class ThingArrayAdapter extends ArrayAdapter<ThingData>{
+		
+		public ThingArrayAdapter(Context context, ArrayList<ThingData> list) {
+			super(context, 0, list);
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View view = null;
+			if (position != nImageCount) {
+				view = mInflater.inflate(R.layout.thing_item, parent, false);
+				
+				try{
+					ThingData thing = getItem(position);
+					if (position % 2 == 0)
+						view.setBackgroundResource(R.drawable.score_item_bg2);
+					else
+						view.setBackgroundResource(R.drawable.score_item_bg1);
+	
+					boolean complete = true;
+					if (thing.getStars() == 0 && thing.getPoint() == 0 && thing.getMisses() == 0 && thing.getPecents() == 100)
+						complete = false;
+					
+					ImageView emptyView = (ImageView)view.findViewById(R.id.ivEmptyImage);
+					LinearLayout llPhotoFrame = (LinearLayout)view.findViewById(R.id.llPhotoFrame);
+					TextView tvLabel = (TextView)view.findViewById(R.id.tvName);
+					tvLabel.setTypeface(customFont);
+					ImageView ivStar1 = (ImageView)view.findViewById(R.id.ivStar1);
+					ImageView ivStar2 = (ImageView)view.findViewById(R.id.ivStar2);
+					ImageView ivStar3 = (ImageView)view.findViewById(R.id.ivStar3);
+					ImageView btnPlay = (ImageView)view.findViewById(R.id.btnPlay);
+					TextView tvScore = (TextView)view.findViewById(R.id.tvScore);
+					
+					if (complete) {
+						ImageView photoView = (ImageView)view.findViewById(R.id.ivPhoto);
+						if (bitmaps[position] == null)
+							bitmaps[position] = getScaledBitmap(position);
+						
+						photoView.setImageBitmap(bitmaps[position]);
+
+						emptyView.setVisibility(View.GONE);
+						llPhotoFrame.setVisibility(View.VISIBLE);
+						
+						tvLabel.setText(thing.getThing());
+						
+						int stars = thing.getStars();
+						 if (stars == 1) {
+							ivStar1.setBackgroundResource(R.drawable.yellow_star);
+						 } else if (stars == 2) {
+							ivStar1.setBackgroundResource(R.drawable.yellow_star);
+							ivStar2.setBackgroundResource(R.drawable.yellow_star);
+						 } else if (stars == 3) {
+							ivStar1.setBackgroundResource(R.drawable.yellow_star);
+							ivStar2.setBackgroundResource(R.drawable.yellow_star);
+							ivStar3.setBackgroundResource(R.drawable.yellow_star);
+						 }
+
+						tvScore.setTypeface(customFont);
+						tvScore.setText(String.valueOf(thing.getPoint()));
+						btnPlay.setVisibility(View.GONE);
+					} else {
+						emptyView.setVisibility(View.VISIBLE);
+						llPhotoFrame.setVisibility(View.GONE);
+						tvScore.setVisibility(View.GONE);
+
+						String label = getString(R.string.click_label);
+						tvLabel.setText(label);
+					}
+				}catch (IndexOutOfBoundsException e) {}
+			} else {
+				view = mInflater.inflate(R.layout.reset_item, parent, false);
+				TextView tvReset = (TextView)view.findViewById(R.id.tvReset);
+				tvReset.setTypeface(customFont);
+			}
+			return view;
+		}
+	}
+
+}

@@ -1,0 +1,259 @@
+package com.hackathon.remoting;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import android.app.Activity;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import com.facebook.FacebookException;
+import com.facebook.FacebookOperationCanceledException;
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.model.GraphUser;
+import com.facebook.widget.WebDialog;
+import com.facebook.widget.WebDialog.OnCompleteListener;
+import com.facebook.widget.WebDialog.RequestsDialogBuilder;
+import com.hackathon.abstracts.Enums.GeneralResult;
+import com.hackathon.imagesutils.ImageDownloader;
+import com.hackathon.imagesutils.ImageDownloader.IOnImageDownloadListener;
+import com.hackathon.imagesutils.ImageDownloader.ImageDownloaderPacker;
+
+public class FacebookManager {
+	public static String TYPE_SMALL = "square";
+	public static String TYPE_MEDIUM = "normal";
+	public static String TYPE_LARGE = "large";
+	
+	private static FacebookManager instance;
+	
+	private Activity mMainAct;
+	
+	private GraphUser mUser;
+	private List <GraphUser> mFriends;
+	
+	private HashMap <String, Bitmap> mProfilePictures = new HashMap<String, Bitmap>();
+	
+	public static synchronized FacebookManager getInstance(Activity activity) {
+        if (instance == null) {
+            instance = new FacebookManager(activity);
+        }
+
+        return instance;
+    }
+	
+	private FacebookManager(final Activity activity) {
+		mMainAct = activity;
+	}
+	 
+	public void destroy() {
+        instance = null;
+    }
+	
+	public void writeStringAsFile(final String fileContents, String fileName) {
+        //Context context = App.instance.getApplicationContext();
+        try {
+            FileWriter out = new FileWriter(new File(fileName));
+            out.write(fileContents);
+            out.close();
+        } catch (IOException e) {
+            //Logger.logError(TAG, e);
+        }
+    }
+	public void fbLogin(final Runnable pCallback){
+		Session.openActiveSession(mMainAct, true, new Session.StatusCallback() {
+			@Override
+			public void call(Session session, SessionState state, Exception exception) {
+				if (session.isOpened()) {
+					
+					// make request to the /me API
+					Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+						@Override
+						public void onCompleted(GraphUser user, Response response) {
+							mUser = user;
+							
+							if(pCallback != null)
+								pCallback.run();
+						}
+					});
+				}
+			}
+		});
+	}
+	
+	public void fbLogout(){
+		Session.getActiveSession().closeAndClearTokenInformation();
+	}
+	
+	public void downloadListOfFriends(final Runnable pCallback){
+		Session.openActiveSession(mMainAct, true, new Session.StatusCallback() {
+			@Override
+			public void call(Session session, SessionState state, Exception exception) {
+				if (session.isOpened()) {
+					
+					// make request to the /me API
+					Request.executeMyFriendsRequestAsync(session, new Request.GraphUserListCallback() {
+						@Override
+						public void onCompleted(List<GraphUser> users, Response response) {
+							//mFriends = users;
+							mFriends = new ArrayList<GraphUser> ();
+							mFriends.add(getUser());
+							mFriends.addAll(users);
+							
+							if(pCallback != null)
+								pCallback.run();
+						}
+					});
+				}
+			}
+		});
+	}
+	
+	public void downloadProfilePicture(final String pUserId, final String pType, final boolean forceDownload, final IOnImageDownloadListener pListener){
+		if(forceDownload == true || (forceDownload == false && mProfilePictures.get(pUserId + pType) == null)){
+			//Try to put a lower resolution picture there, before the download ends
+			if(pType.equals(TYPE_MEDIUM)){
+				if(pListener != null && mProfilePictures.get(pUserId + TYPE_SMALL) != null)
+					pListener.onImageDownloaded(mProfilePictures.get(pUserId + TYPE_SMALL));
+			}
+			else
+				if(pType.equals(TYPE_LARGE)){
+					if(pListener != null && mProfilePictures.get(pUserId + TYPE_MEDIUM) != null)
+						pListener.onImageDownloaded(mProfilePictures.get(pUserId + TYPE_MEDIUM));
+					else
+						if(pListener != null && mProfilePictures.get(pUserId + TYPE_SMALL) != null)
+							pListener.onImageDownloaded(mProfilePictures.get(pUserId + TYPE_SMALL));
+				}
+			//Try to download the desired picture
+			(new ImageDownloader()).execute(
+					new ImageDownloaderPacker(
+							"https://graph.facebook.com/" + pUserId + "/picture?type=" + pType,
+							new IOnImageDownloadListener() {
+								@Override
+								public void onImageDownloaded(Bitmap pBitmap) {
+									//Store picture for later use
+									mProfilePictures.put(pUserId + pType, pBitmap);
+									
+									if(pListener != null)
+										pListener.onImageDownloaded(pBitmap);
+								}
+								@Override
+								public void onImageDownloadCanceled() {
+									if(pListener != null)
+										pListener.onImageDownloadCanceled();
+								}
+							}));
+		}
+		else{
+			if(pListener != null)
+				pListener.onImageDownloaded(mProfilePictures.get(pUserId + pType));
+		}
+	}
+	
+	public void downloadProfilePicture(final String pUserId, final String pType){
+		downloadProfilePicture(pUserId, pType, true, null);
+	}
+	
+
+	public  void sendRequestDialog(final String pToUserId) {
+		mMainAct.runOnUiThread(new Runnable(){
+
+			@Override
+			public void run() {
+				Bundle params = new Bundle();
+			    params.putString("to", pToUserId);
+			    
+			    RequestsDialogBuilder dialog = new WebDialog.RequestsDialogBuilder(mMainAct,
+			            Session.getActiveSession(),
+			            params);
+			    /*dialog.setLink("https://play.google.com/store/apps/details?id=com.yoero.puzzle.arukone.flow.free");
+			    dialog.setDescription("descriptie");
+			    dialog.setCaption("captie");
+			    dialog.setName("Bingo Free name");
+			    */
+			    dialog.setTitle("Bingo Run Free");
+			    //dialog.setData("Bogdan tirca");
+			    dialog.setMessage("Join me on Bingo Free! I'm having a great time playing it!");
+			    
+			    WebDialog requestsDialog = dialog.build();
+			    requestsDialog.setOnCompleteListener(new OnCompleteListener() {
+	                @Override
+	                public void onComplete(final Bundle values, final FacebookException error) {
+							if (error != null) {
+		                        if (error instanceof FacebookOperationCanceledException) {
+		                            Toast.makeText(mMainAct.getApplicationContext(), 
+		                                "Request cancelled", 
+		                                Toast.LENGTH_SHORT).show();
+		                        } else {
+		                            Toast.makeText(mMainAct.getApplicationContext(), 
+		                                "Network Error", 
+		                                Toast.LENGTH_SHORT).show();
+		                        }
+		                    } else {
+		                        final String requestId = values.getString("request");
+		                        if (requestId != null) {
+		                            Toast.makeText(mMainAct.getApplicationContext(), 
+		                                "Request sent",  
+		                                Toast.LENGTH_SHORT).show();
+		                        } else {
+		                            Toast.makeText(mMainAct.getApplicationContext(), 
+		                                "Request cancelled", 
+		                                Toast.LENGTH_SHORT).show();
+		                        }
+		                    }
+	                }
+              });
+			                    
+			    requestsDialog.show();
+			}
+			
+		});
+	    
+	}
+	
+	public GraphUser getUser() {
+		return mUser;
+	}
+	
+	//Not to be used many times. O(N)
+	public GraphUser getFriendById(final String pId){
+		for(GraphUser user : mFriends)
+			if(user.getId().equals(pId))
+				return user;
+		return null;
+	}
+	
+	public List <GraphUser> getListOfFriends(){
+		return mFriends;
+	}
+	
+	public int getNumberOfFriends(){
+		return mFriends == null ? 0 : mFriends.size();
+	}
+	
+	public String [] getFriendsIdFrom(final int pIndex, final int pCount){
+		if(pCount < 1 || mFriends == null)
+			return null;
+		String res[] = new String[ Math.min(pCount, mFriends.size() - pIndex) ];
+		for(int i = pIndex; i < pIndex + Math.min(pCount, mFriends.size() - pIndex); i ++){
+			res[i - pIndex] = mFriends.get(i).getId();
+		}
+		return res;	
+	}
+	public Bitmap getProfilePicture(final String pUserId, final String pType){
+		return mProfilePictures.get(pUserId + pType);
+	}
+	
+	public boolean isLogedIn(){
+		return mUser != null;
+	}
+
+	
+}

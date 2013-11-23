@@ -1,0 +1,412 @@
+package com.hackathon.remoting;
+
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minidev.json.JSONArray;
+
+import ch.boye.httpclientandroidlib.androidextra.Base64;
+
+import com.facebook.android.FbDialog;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.yoero.base.crypto.TimeEncrypter;
+import com.yoero.base.remoting.CallExecutor;
+import com.yoero.base.remoting.CommunicatorBase;
+import com.yoero.base.remoting.IRemoteCallback;
+import com.yoero.base.remoting.RemoteCallHolder;
+import com.yoero.bingo.data.Enums.LoginResult;
+import com.yoero.bingo.data.holders.GameStatusDataHolder;
+import com.yoero.bingo.data.holders.InitialSettingsDataHolder;
+import com.yoero.bingo.data.holders.LeaderBoardHolder;
+import com.yoero.bingo.data.holders.LoginDataHolder;
+import com.yoero.bingo.data.holders.MessageDataHolder;
+import com.yoero.bingo.data.holders.RoomUsersDataHolder;
+import com.yoero.bingo.data.holders.StatusDataHolder;
+import com.yoero.bingo.data.holders.GameTicketsDataHolder;
+import com.yoero.bingo.data.holders.UserDataHolder;
+import com.yoero.bingo.data.holders.UserOnlineStateDataHolder;
+import com.yoero.bingo.data.holders.UserPosDataHolder;
+import com.yoero.bingo.data.holders.UserScoreDataHolder;
+import com.yoero.bingo.data.holders.UserStatisticsDataHolder;
+
+public class Communicator extends CommunicatorBase {
+	//public static boolean DEBUG = false;
+	
+	private static String mPrivateKey = "ZjbWZZbUgL7VjfSdLvyulLRw41ZrWChk";
+	private static String mSessionKey;
+	private static TimeEncrypter mEnc;
+
+	private static LoginDataHolder LoginData;
+	
+	
+	public static LoginDataHolder getLoginData() {
+		if (LoginData == null) {
+			LoginData = new LoginDataHolder();
+			LoginData.Result = LoginResult.TemporaryBan;
+		}
+
+		return LoginData;
+	}
+
+	private void setLoginData(LoginDataHolder parsedResult) { 
+		LoginData = parsedResult;
+		if (isLoggedIn()) {
+			mAuthCookie = LoginData.AuthCookie;
+		} else {
+			mAuthCookie = null;
+		}
+	}
+
+	public static boolean isLoggedIn() {
+		return getLoginData().Result == LoginResult.Success;
+	}
+
+	// NEEDS TO BE AFTER ALL FREAKING VARIABLES IT'S USING
+	public static Communicator inst;
+
+	public Communicator() {
+		SecureRandom random = new SecureRandom();
+		byte iv[] = new byte[8];
+		random.nextBytes(iv);
+		mSessionKey = Base64.encodeToString(iv, Base64.NO_WRAP);
+
+		mEnc = new TimeEncrypter(mSessionKey, mPrivateKey, true);
+	}
+
+	public void userLogin(IRemoteCallback call, int verNumber, String deviceId, String email, String password) {
+		// you'll only need to write these wrappers that effectivelly do just two things
+		
+		// 1. prepare call by passing caller, method and parameters
+		final RemoteCallHolder req = buildRequest(call, "BingoPublic/UserLoginAndroid", "k", mSessionKey, "d",
+				mEnc.Encrypt(deviceId), "u", mEnc.Encrypt(email), "p", password == null ? null : mEnc.Encrypt(password));
+
+		// 2. pass those parameters into CallExecuter and then define what is done with results after
+		CallExecutor exec = new CallExecutor() {
+			@Override
+			public void process(RemoteCallHolder rch) {
+				setLoginData((LoginDataHolder) rch.parsedResult);
+			}
+		};
+		
+		// 3. Just a small bonus - you pass this, request you've build, and value you are expecting back
+		exec.executeCall(this, req, LoginDataHolder.class);
+	}
+	
+	public void mergeFacebook(IRemoteCallback call, int userid, String fbid){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/MergeFacebook",
+				"uid", LoginData.UserId, "fbid", fbid);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	public void removeFacebook(IRemoteCallback call, int userid){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/RemoveFacebook",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void getInitialSettings(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetInitialSettings",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, InitialSettingsDataHolder.class);
+	}
+	
+	public void getUserData(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetUserData",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, UserDataHolder.class);
+	}
+	
+	public void setDauber(IRemoteCallback call, int pDauber){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetDauber",
+				"daub", pDauber);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	public void setAvatar(IRemoteCallback call, int pAvatar){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetAvatar",
+				"avat", pAvatar);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void buyItem(IRemoteCallback call, int type, int nr){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/BuyItem",
+				"type", type, "nr", nr);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void addCoins(IRemoteCallback call, int coins){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/AddCoins",
+				"k", mSessionKey, "uid", mEnc.Encrypt(LoginData.UserId + "\n"+ coins));
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	
+	/*
+	 * Wasn't safe
+	public void setUserData(IRemoteCallback call, UserDataHolder userDataHolder){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetUserData",
+				"uid", LoginData.UserId, "ud", userDataHolder.toJson());
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	*/
+	
+	
+	public void changePW(IRemoteCallback call, String oldpw, String newpw){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/ChangePW",
+				"k", mSessionKey, "uid", mEnc.Encrypt(LoginData.UserId + ""), "oldpw", mEnc.Encrypt(oldpw), "newpw", mEnc.Encrypt(newpw));
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void changeNick(IRemoteCallback call, String nick){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/ChangeNick",
+				"uid", LoginData.UserId, "nick", nick);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}	
+	
+	public void getUserActiveState(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetUserActiveState",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	
+	public void setGCMDeviceId(IRemoteCallback call, String GCMDeviceId){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetGCMDeviceId",
+				"uid", LoginData.UserId, "gcmid", GCMDeviceId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void getLatestMessages(IRemoteCallback call, int chatRoom, int minsBefore){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetLatestMessages",
+				"uid", LoginData.UserId, "cr", chatRoom,  "mins", minsBefore);
+		
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, new TypeReference<ArrayList<MessageDataHolder>>(){});
+	}
+	
+	public void sendMessage(IRemoteCallback call, MessageDataHolder message){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/AddMessage",
+				"uid", LoginData.UserId, "msg", message.toJson()); 
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	public void setRoom(IRemoteCallback call, int room){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetRoom",
+				"uid", LoginData.UserId, "room", room); 
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	public void getSecsUntilGame(IRemoteCallback call, int room){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetSecsUntilGame",
+				"room", room); 
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	public void joinGame(IRemoteCallback call, int room, int nrTickets, boolean extraPowerups){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/JoinGame",
+				"uid", LoginData.UserId, "room", room, "nrt", nrTickets, "extr", extraPowerups); 
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, GameTicketsDataHolder.class);
+	}
+	
+	public void getFbUsersOnlineState(IRemoteCallback call, JSONArray pFbIds){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetFbUsersOnlineState",
+				"fbids", pFbIds.toJSONString());
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, new TypeReference<ArrayList<UserOnlineStateDataHolder>>(){});
+	}
+	
+	public void getRoomsNrPlayers(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetRoomsNrPlayers");
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, new TypeReference<ArrayList<RoomUsersDataHolder>>(){});
+	}
+	
+	public void updateUserScore(IRemoteCallback call, UserScoreDataHolder us){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/UpdateUserScore",
+				"uid", LoginData.UserId, "us", us.toJson());
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void getScoreBoard(IRemoteCallback call, int room, int gi, int max){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetScoreboard",
+				"room", room, "gi", gi, "max", max);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, new TypeReference<ArrayList<UserPosDataHolder>>() {});
+	}
+	
+	public void getGameStatus(IRemoteCallback call, int room, int gi){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetGameStatus",
+				"room", room, "gi", gi);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, GameStatusDataHolder.class);
+	}
+	
+	public void getUserStatistics(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetUserStatistics",
+				"uid", LoginData.UserId);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, UserStatisticsDataHolder.class);
+	}
+	
+	public void drawNr(IRemoteCallback call, int room, int gi, int tnr, int nr){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/OnDrawNr",
+				"room", room, "gi", gi, "tnr", tnr, "nr", nr);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void bingo(IRemoteCallback call, int room, int gi, int tnr){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/OnBingo",
+				"room", room, "gi", gi, "tnr", tnr);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void getExchangeRate(IRemoteCallback call, int type){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetExchangeRate",
+				"type", type);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	
+	public void doExchange(IRemoteCallback call, int type, int amount){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/DoExchange",
+				"type", type, "amount", amount);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void getExtraPowerupsCost(IRemoteCallback call, int room){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetExtraPowerupsCost",
+				"room", room);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	
+	public void getPendingNrPlayers(IRemoteCallback call, int room){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetPendingNrPlayers",
+				"room", room);
+		
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	
+	public void betOnWheel(IRemoteCallback call, int item, int amount){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/BetOnWheel",
+				"k", mSessionKey, "uid", mEnc.Encrypt(LoginData.UserId + ""), "item", item, "amount", amount);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, Integer.class);
+	}
+	
+	public void getLeaderBoard(IRemoteCallback call, int start, int amount, int type, long ticks){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/GetLeaderBoard",
+				"uid", LoginData.UserId, "start", start, "amount", amount, "type", type, "ticks", ticks);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, LeaderBoardHolder.class);
+	}
+	
+	public void recoverPassword(IRemoteCallback call, String email){
+		final RemoteCallHolder req = buildRequest(call, "BingoPublic/RecoverPassword",
+				"k", mSessionKey, "email", mEnc.Encrypt(email));
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	
+	// So, I've envisioned this class as - base does all communication - you just write things to make stuff "typed"
+	// Liek Visual Studio does so well - "proxy" classes always rock. So let's say you want to send that array to the server
+	// you just write method
+	public void invokeSomething(IRemoteCallback call, JSONArray udh) {
+		// and ideally - this class would be autogenerated from server - just I don't have time to write generator ;)
+		//
+		// so first you build parameter
+		//Couldn't we make this as:
+		//Tried to convert udh to JSON object directly but it doesn't seems it works :D
+		final RemoteCallHolder req = buildRequest(call, "BingoPublic/test", "userdata", udh.toJSONString());
+		// if you want list - just make class that inherits that BaseJson holder so that you can easily get json of that, got me?yup/
+		
+		CallExecutor exec = new CallExecutor();
+		// sry, it's async ;)
+		exec.executeCall(this,  req, new TypeReference<ArrayList<UserDataHolder>>(){}); // so basically you pick what'll be returned and... that's it
+		//good, and what about that "java" problem with public static void main...
+	}
+
+}

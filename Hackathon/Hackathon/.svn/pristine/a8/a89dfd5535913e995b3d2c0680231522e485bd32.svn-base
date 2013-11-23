@@ -1,0 +1,128 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.os.Handler;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+
+public class CanvasView extends View {
+
+	private Paint   mPaint;
+    public static Bitmap  mBitmap = null;
+    private Canvas  mCanvas;
+    private Paint   mBitmapPaint;
+    private int mRadius = 10;
+    private int mWidth;
+    private int mHeight;
+    private int tmp = 0;
+
+	public CanvasView(Context context, int width, int height, int radius) {
+		super(context);
+
+		mRadius = radius;
+		mWidth = width;
+		mHeight = height;
+		
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setColor(Color.GRAY);
+        
+        if (mBitmap != null)
+        	mBitmap.recycle();
+        
+        mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        mCanvas = new Canvas(mBitmap);
+        mBitmapPaint = new Paint(Paint.DITHER_FLAG);
+        
+        mPaint.setStyle(Paint.Style.FILL);
+        mCanvas.drawRect(0, 0, width, height, mPaint);
+        
+        
+        mPaint.setAlpha(0xFF);
+        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+	}
+
+	@Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+            	tmp = 0;
+                mCanvas.drawCircle(x, y, mRadius, mPaint);
+                invalidate();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mCanvas.drawCircle(x, y, mRadius, mPaint);
+                invalidate();
+                tmp++;
+                if(tmp == 5) {
+                	tmp = 0;
+                	new Handler().postDelayed(new Runnable() {
+                		public void run() {
+                			calcPercent();
+                		}
+                	}, 50);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+    			new Handler().postDelayed(new Runnable() {
+    				public void run() {
+    					calcPercent();
+    				}
+    			}, 50);
+                break;
+        }
+        
+        return true;
+    }
+
+    @Override
+    public void onDraw(Canvas canvas){
+        canvas.drawBitmap(mBitmap, 0, 0, mBitmapPaint);
+    }
+    
+    
+    public void freeBitmap() {
+    	if (mBitmap != null) {
+    		mBitmap.recycle();
+    		mBitmap = null;
+    	}
+    }
+    
+    private void calcPercent() {
+    	/*
+    	int all = mWidth * mHeight;
+    	int trans = 0;
+    	for (int i = 0; i < mWidth; i++) {
+	    	for (int j = 0; j < mHeight; j++) {
+	    		if (mBitmap.getPixel(i, j) != Color.GRAY)
+	    			trans++;
+	    	}
+    	}
+    	
+    	int pecent = (all - trans) * 100 / all;
+    	Log.i("ScratchQuiz", "Pecent = " + pecent + "%");
+    	ScratchActivity.getInstance().updatePecent(pecent);*/
+    	int all = mWidth * mHeight;
+    	int trans = 0;
+    	int[] pixels = new int[all];
+    	mBitmap.getPixels(pixels, 0, mWidth, 0, 0, mWidth, mHeight);
+    	for (int i = 0; i < all;i++)
+    		if (pixels[i] != Color.GRAY)
+    			trans++;
+    	pixels = null;
+    	int pecent = (all - trans) * 100 / all;
+    	Log.i("ScratchQuiz", "Pecent = " + pecent + "%");
+    	GameActivity.getInstance().updatePecent(pecent);
+    }
+}

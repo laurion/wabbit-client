@@ -1,0 +1,259 @@
+package com.yoero.casual.guess.scratch.off.quiz;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.yoero.base.LinksUtil;
+import com.yoero.base.UtilFunctions;
+import com.yoero.base.highscore.HighScoreItem;
+import com.yoero.base.highscore.IHighScoreListCallback;
+import com.yoero.base.highscore.LocalHighScoreList;
+
+public class HighScoresActivity extends Activity implements IHighScoreListCallback {
+
+	private LinearLayout llScoreScope; 
+	private LinearLayout llScoreArea;
+	private LinearLayout llScoreList;
+
+	private LayoutInflater inflater;
+	
+	private Typeface customFont;
+	private TextView tvScoreLabel;
+
+	private String scoreLabel;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.high_scores);
+		
+		initLayout();
+	}
+
+	private void initLayout() {
+		MainApplication mainApp = (MainApplication)getApplication();
+		customFont = mainApp.customFont;
+		
+		llScoreScope = (LinearLayout)findViewById(R.id.llScoreScope);
+
+		ImageButton btnBack = (ImageButton)findViewById(R.id.btnBack);
+		btnBack.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		ImageButton btnRate = (ImageButton)findViewById(R.id.btnRate);
+		btnRate.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				
+			}
+		});
+		
+		TextView onlineUnlimited = (TextView)findViewById(R.id.onlineUnlimited);
+		onlineUnlimited.setText("   " + getString(R.string.txt_unlimited));
+		TextView onlineCumulative = (TextView)findViewById(R.id.onlineCumulative);
+		onlineCumulative.setText(getString(R.string.txt_cumulative));
+		TextView localUnlimited = (TextView)findViewById(R.id.localUnlimited);
+		localUnlimited.setText("   " + getString(R.string.txt_unlimited));
+		TextView localCumulative = (TextView)findViewById(R.id.localCumulative);
+		localCumulative.setText(getString(R.string.txt_cumulative));
+
+		Button btnOnlineUnlimited3days = (Button)findViewById(R.id.btnOnlineUnlimited3days);
+		btnOnlineUnlimited3days.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_unlimited);
+				MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreOnline(HighScoresActivity.this, HighScoresActivity.this, 3);
+			}
+		});
+		Button btnOnlineUnlimitedAlltime = (Button)findViewById(R.id.btnOnlineUnlimitedAlltime);
+		btnOnlineUnlimitedAlltime.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_unlimited);
+				MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreOnline(HighScoresActivity.this, HighScoresActivity.this, Integer.MAX_VALUE);
+			}
+		});
+		Button btnOnlineCumulative3days = (Button)findViewById(R.id.btnOnlineCumulative3days);
+		btnOnlineCumulative3days.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_cumulative);
+				LocalHighScoreList.getScoreTotals(HighScoresActivity.this, HighScoresActivity.this, 3);
+			}
+		});
+		Button btnOnlineCumulativeAlltime = (Button)findViewById(R.id.btnOnlineCumulativeAlltime);
+		btnOnlineCumulativeAlltime.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_cumulative);
+				LocalHighScoreList.getScoreTotals(HighScoresActivity.this, HighScoresActivity.this, Integer.MAX_VALUE);
+			}
+		});
+		Button btnLocalUnlimited3days = (Button)findViewById(R.id.btnLocalUnlimited3days);
+		btnLocalUnlimited3days.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_unlimited);
+				displayItems(MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreList3Days());
+			}
+		});
+		Button btnLocalUnlimitedAlltime = (Button)findViewById(R.id.btnLocalUnlimitedAlltime);
+		btnLocalUnlimitedAlltime.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_unlimited);
+				displayItems(MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreListAllTime());
+			}
+		});
+		Button btnLocalCumulative3days = (Button)findViewById(R.id.btnLocalCumulative3days);
+		btnLocalCumulative3days.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_cumulative);
+				calculateLocalCumulative(MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreList3Days());
+			}
+		});
+		Button btnLocalCumulativeAlltime = (Button)findViewById(R.id.btnLocalCumulativeAlltime);
+		btnLocalCumulativeAlltime.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				scoreLabel = getString(R.string.txt_cumulative);
+				calculateLocalCumulative(MainApplication.getCurrentHighScoreList(MainApplication.UNLIMITED_MODE).getHighScoreListAllTime());
+			}
+		});
+		
+		llScoreArea = (LinearLayout) findViewById(R.id.llScoreArea);
+		tvScoreLabel = (TextView) findViewById(R.id.tvScoreLabel);
+		tvScoreLabel.setTypeface(customFont);
+		
+		llScoreList = (LinearLayout) findViewById(R.id.llScoreList);
+		inflater = getLayoutInflater();
+	}
+
+	private void calculateLocalCumulative(ArrayList<HighScoreItem> items){
+		ArrayList<HighScoreItem> sums = new ArrayList<HighScoreItem>();
+		for (int i = 0; i < items.size(); i++) {
+			boolean add = true;
+			HighScoreItem item = new HighScoreItem(items.get(i).name, items.get(i).score); 
+			
+			for (int j = 0; j < sums.size(); j++) {
+				HighScoreItem temp = sums.get(j);
+				if (item.name.equals(temp.name)) {
+					temp.score = temp.score + item.score;
+					sums.set(j, temp);
+					add = false;
+					break;
+				}
+			}
+			
+			if (add)
+				sums.add(item);
+		}
+
+		for (int i = 0; i < sums.size() - 1; i++) {
+			for (int j = i + 1; j < sums.size(); j++) {
+				if (sums.get(i).score < sums.get(j).score) {
+					HighScoreItem temp = sums.get(i);
+					sums.set(i, sums.get(j));
+					sums.set(j, temp);
+				}
+			}
+		}
+		displayItems(sums);
+	}
+
+	@Override
+	public void HighScoreListResult(final ArrayList<HighScoreItem> items) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				HighScoreListResultProcess(items);
+			}
+		});
+	}
+	
+	private void HighScoreListResultProcess(ArrayList<HighScoreItem> items) {
+		if (items == null) {
+			Toast.makeText(this,
+					"Cannot connect to the web service. Please check your Internet connection and try again later",
+					Toast.LENGTH_LONG).show();
+		} else if (items.size() == 1 && items.get(0).isUpdateItem()) {
+			UtilFunctions.ShowMessageBox(this, "Update required",
+					"To use this functionality you must update app to the newest version. Do you want to do that now?",
+					"Yes", _updateAppClick, "No", null);
+		} else {
+			displayItems(items);
+		}
+	}
+	
+	private OnClickListener _updateAppClick = new OnClickListener() {
+		public void onClick(DialogInterface dialog, int which) {
+			launchLink();
+		}
+	};
+	
+	protected void launchLink() {
+		LinksUtil.linkToApp(this);
+	}
+
+	private void displayItems(ArrayList<HighScoreItem> items) {
+		llScoreScope.setVisibility(View.GONE);
+		llScoreArea.setVisibility(View.VISIBLE);
+		
+		tvScoreLabel.setText(scoreLabel + " High Scores");
+
+		llScoreList.removeAllViews();
+		
+		Log.i("ScratchQuiz", "HighScoreItem count = " + items.size());
+
+		if (items == null || items.size() == 0)
+			return;
+		
+		for (int i = 0 ; i < items.size(); i++) {
+			HighScoreItem item = items.get(i);
+			View view = inflater.inflate(R.layout.high_score_item, null, false);
+			if (i % 2 == 0)
+				view.setBackgroundResource(R.drawable.score_item_bg1);
+			else
+				view.setBackgroundResource(R.drawable.score_item_bg2);
+			TextView tvName = (TextView)view.findViewById(R.id.tvName);
+			TextView tvScore = (TextView)view.findViewById(R.id.tvScore);
+			tvName.setText(item.name);
+			tvName.setTypeface(customFont);
+			tvScore.setText(String.valueOf(item.score));
+			tvScore.setTypeface(customFont);
+			
+			llScoreList.addView(view);
+		}
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (llScoreArea.getVisibility() == View.VISIBLE) {
+				llScoreArea.setVisibility(View.GONE);
+				llScoreScope.setVisibility(View.VISIBLE);
+			} else {
+				finish();
+			}
+			return true;
+		}
+		return false;
+	}
+}

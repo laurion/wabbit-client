@@ -1,0 +1,77 @@
+package com.yoero.casual.guess.scratch.off.quiz.data;
+
+public class ThingData {
+
+	private int id;
+	private int level_id;
+	private String thing;
+	private String image;
+	private int stars;
+	private int points;
+	private int misses;
+	private int pecents;
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getId() {
+		return this.id;
+	}
+	
+	public void setLevelId(int level_id) {
+		this.level_id = level_id;
+	}
+	
+	public int getLevelId() {
+		return this.level_id;
+	}
+	
+	public void setThing(String thing) {
+		this.thing = thing;
+	}
+	
+	public String getThing() {
+		return this.thing;
+	}
+	
+	public void setImage(String image) {
+		this.image = image;
+	}
+	
+	public String getImage() {
+		return this.image;
+	}
+	
+	public void setStars(int stars) {
+		this.stars = stars;
+	}
+	
+	public int getStars() {
+		return this.stars;
+	}
+	
+	public void setPoints(int points) {
+		this.points = points;
+	}
+	
+	public int getPoint() {
+		return this.points;
+	}
+	
+	public void setMisses(int misses) {
+		this.misses = misses;
+	}
+	
+	public int getMisses() {
+		return this.misses;
+	}
+	
+	public void setPecents(int pecents) {
+		this.pecents = pecents;
+	}
+	
+	public int getPecents() {
+		return this.pecents;
+	}
+}

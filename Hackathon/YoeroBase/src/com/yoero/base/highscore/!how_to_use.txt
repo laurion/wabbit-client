@@ -1,0 +1,130 @@
+Basically you are interested in two things:
+
+1. How to save scores
+2. How to display High Scores
+
+To do both of those things you need to initialize instance of LocalHighScoreList class:
+
+LocalHighScoreList.initOnlineController("androidws.com", "KeyPublic", "KeyPrivate", COMPANY_ID, GAME_ID, this);
+
+After you do that you can create instances of different High Score lists. For example let's have two top lists in the game (each must have unique modeId, integer starting from 1): 
+
+LocalHighScoreList HsUnlimited = new LocalHighScoreList(this, 1);
+LocalHighScoreList HsLimited = new LocalHighScoreList(this, 2);
+
+The basic idea is to have that class that saves all the scores for user locally, plus uploads them to our server where there is Internet connection
+
+
+1. How to save scores
+=====================
+
+Here is the example implementation of onClick listener that saves the score after user enters name and clicks on Save button:
+
+public void mOnEditNameOkClick(View v) {
+	// Getting name from the editor checking if it's OK
+	EditText editor = (EditText) findViewById(R.id.edit_name_id);
+	String strName = editor.getText().toString();
+	if (strName.length() < 3 || strName.length() > 16) {
+		Toast.makeText(this, R.string.name_min_length, Toast.LENGTH_LONG).show();
+		return;
+	} else if (!ForbiddenWords.isOk(strName)) {
+		Toast.makeText(this, R.string.please_use_different_nick, Toast.LENGTH_LONG).show();
+		return;			
+	}
+
+	// If name is OK, we save it for future reference and start saving by calling addScoreItem
+	UtilSettings.saveSettingsString(this, "PLAYER_NICK_HIGHSCORE", strName);
+	
+	//addScoreItem(strName);
+	
+	// TODO: switching to new method
+	HighScoreItem hi = new HighScoreItem(strName, ColormatchMainActivity.score);
+	getCurrentHighScoreList().addScoreItemAndSave(this, hi);
+	
+	closeDialog();
+}
+
+public static LocalHighScoreList HsUnlimited;
+public static LocalHighScoreList HsLimited;	
+public LocalHighScoreList getCurrentHighScoreList() {
+	if (GameSettings.getGameSettings().getGameMode() == GameSettings.Game_Mode_Unlimit) {
+		return HsUnlimited;
+	} else {
+		return HsLimited;
+	}
+}
+
+
+2. How to display High Scores
+=============================
+
+Here is example activity that shows High Score lists - both local and online:
+
+public class GameScoreActivity extends BaseSquareSmashActivity implements IHighScoreListCallback {
+	
+	// ... removed onCreate and several other View related methods for brevity
+	// the things you are interested are:
+	// 1. to display local high score list - you would just call display:
+	//     displayItems(BaseSquareSmashActivity.HsLimited.getHighScoreListAllTime());
+	//
+	// 2. for online list it's slightly more complicated as there is a need for internet call
+	//    so you do a HsUnlimited.getHighScoreOnline(this, this, days); call
+	//    and then HighScoreListResult method gets invoked back when result arrives
+	//
+	// In online scenario make sure to also handle that "update needed scenario" (you can just copy-paste this code)
+
+	private void reflectScoreTable(int modeId, int days) {
+		if (modeId == 0)
+			LocalHighScoreList.getScoreTotals(this, this, days);
+		else if (modeId == 1)
+			HsUnlimited.getHighScoreOnline(this, this, days);
+		else
+			HsLimited.getHighScoreOnline(this, this, days);
+	}
+
+	public void HighScoreListResult(final ArrayList<HighScoreItem> items) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				HighScoreListResultProcess(items);
+			}
+		});
+	}
+
+	private void HighScoreListResultProcess(ArrayList<HighScoreItem> items) {
+		if (items == null) {
+			Toast.makeText(this,
+					"Cannot connect to the web service. Please check your Internet connection and try again later",
+					Toast.LENGTH_LONG).show();
+			showScoreMenu();
+		} else if (items.size() == 1 && items.get(0).isUpdateItem()) {
+			UtilFunctions.ShowMessageBox(this, "Update required",
+					"To use this functionality you must update app to the newest version. Do you want to do that now?",
+					"Yes", _updateAppClick, "No", null);
+			showScoreMenu();
+		} else {
+			displayItems(items);
+		}
+	}
+
+	private OnClickListener _updateAppClick = new OnClickListener() {
+		public void onClick(DialogInterface dialog, int which) {
+			launchLink();
+		}
+	};
+
+	protected void launchLink() {
+		LinksUtil.linkToApp(this);
+	}
+
+	private void displayItems(ArrayList<HighScoreItem> items) {
+		showScoreTable(); //
+		mLists.clear();
+		for (HighScoreItem item : items) {
+			mLists.add(item);
+		}
+
+		mAdapter.notifyDataSetChanged();
+	}
+} 
+
+
