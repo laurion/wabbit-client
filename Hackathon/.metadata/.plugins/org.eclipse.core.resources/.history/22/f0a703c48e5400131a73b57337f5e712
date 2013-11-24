@@ -1,0 +1,70 @@
+package com.hackathon.activity;
+
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnKeyListener;
+import android.widget.Toast;
+
+import com.hackathon.R;
+
+public class SettingsActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+                
+        setContentView(R.layout.settings_layout);
+        
+        findViewById(R.id.editText1).setOnKeyListener(
+        		
+        		new OnKeyListener() {
+					
+					@Override
+					public boolean onKey(View v, int keyCode, KeyEvent event) {
+						// TODO Auto-generated method stub
+						
+						Toast.makeText(getApplicationContext(), "Hello Dude!!",
+								   Toast.LENGTH_LONG).show();
+						
+						return false;
+					}
+				}
+        		
+        		);
+        
+        
+        /*
+         * Set the timeout for the bluetooth:
+         * 
+	        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); 
+			discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);//0 for unlimited, and anything else for seconds (I think)
+			startActivity(discoverableIntent);
+         */
+        
+        /*
+         * Set the bluetooth on or off:
+         * 
+            BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();    
+			if (mBluetoothAdapter.isEnabled()) {
+			    mBluetoothAdapter.disable(); 
+			}
+			else{
+				mBluetoothAdapter.enable(); 
+			} 
+         */
+        
+        //Intent sky = new Intent("android.intent.action.VIEW", Uri.parse("https://talkgadget.google.com/hangouts/_/76cpj8oap18r3d7njhgirt5l60"));
+        //startActivity(sky);        
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+    
+}

@@ -1,5 +1,0 @@
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/transparent_rect_shape_white_borders_pressed"
-          android:state_pressed="true" />
-    <item android:drawable="@drawable/transparent_rect_shape_white_borders" />
-</selector>

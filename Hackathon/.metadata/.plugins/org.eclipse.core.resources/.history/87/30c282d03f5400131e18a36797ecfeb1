@@ -1,0 +1,6 @@
+package com.hackathon.lists;
+
+public class ListItemHolder {
+	public Bitmap avatar;
+	public String name;
+}

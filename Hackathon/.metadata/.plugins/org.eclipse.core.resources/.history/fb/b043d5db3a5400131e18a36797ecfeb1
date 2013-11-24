@@ -1,0 +1,313 @@
+package com.yoero.bingo.android.views;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.AttributeSet;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.yoero.bingo.abstracts.C;
+import com.yoero.bingo.base.R;
+import com.yoero.bingo.data.holders.LeaderBoardHolder;
+import com.yoero.bingo.data.holders.LeaderBoardItemHolder;
+import com.yoero.bingo.remoting.FacebookManager;
+import com.yoero.bingo.utils.ImageDownloader.IOnImageDownloadListener;
+import com.yoero.bingo.utils.*;
+
+public class LeaderBoardView extends RelativeLayout{
+	private final static int ITEMS_PER_PAGE = 3;
+	
+	private ListView mLeaderBoardItemsListView;
+	
+	private LeaderBoardAdapter mLeaderBoardAdapter;
+	private List mLeaderBoardItemsList;
+	private List <LeaderBoardItemHolder> mCached[] = (List[])new List[3];
+	
+	private float mAdjustX, mAdjustY;
+	
+	private long mLastTicks[] = new long[3];
+	
+	private Activity mAct;
+	
+	private Button mButton1, mButton2, mButton3;
+	
+	private int leaderBoardType = 0;
+	//0 level, 1 coins, 3 time
+	
+	public LeaderBoardView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		
+		initView();
+		
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+	 
+		mAdjustX = (float) display.getWidth() / C.CAMERA_WIDTH;
+		mAdjustY = (float) display.getHeight() / C.CAMERA_HEIGHT;
+		
+		//Last ticks for each type
+		mLastTicks[0] = 0L;
+		mLastTicks[1] = 0L;
+		mLastTicks[1] = 0L;
+		
+		mLeaderBoardItemsListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				if(arg2 == mLeaderBoardAdapter.getCount() - 1){
+					showLeaderBoard();
+					//Toast.makeText(mAct, "ASD", Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+	}
+	
+	public LeaderBoardView(Context context) {
+		super(context);
+	}
+
+	private void initView(){
+		LayoutInflater.from(getContext()).inflate(R.layout.leader_board_layout, this);
+		setWillNotDraw(false);
+		
+		mButton1 = (Button)findViewById(R.id.order_level);
+		mButton1.setOnClickListener(new OnClickListener() { 
+			@Override
+			public void onClick(View v) {
+				leaderBoardType = 0;
+				showLeaderBoard();
+			}
+		});
+		mButton2 = (Button)findViewById(R.id.order_coins);
+		mButton2.setOnClickListener(new OnClickListener() { 
+			@Override
+			public void onClick(View v) {
+				leaderBoardType = 1;
+				showLeaderBoard();
+			}
+		});
+		mButton3 = (Button)findViewById(R.id.order_time);
+		mButton3.setOnClickListener(new OnClickListener() { 
+			@Override
+			public void onClick(View v) {
+				leaderBoardType = 2;
+				showLeaderBoard();
+			}
+		});
+		
+		mLeaderBoardItemsListView = (ListView) findViewById(R.id.messagesList);
+		
+		mLeaderBoardItemsList = new ArrayList ();
+		mLeaderBoardAdapter = new LeaderBoardAdapter(getContext(), mLeaderBoardItemsList);
+		
+		mLeaderBoardItemsListView.setAdapter(mLeaderBoardAdapter);
+	}
+	
+	public void setActivity(Activity pAct){
+		mAct = pAct;
+		
+		mLeaderBoardAdapter.setActivity(pAct);
+	}
+	
+	private ArrayList <LeaderBoardItemHolder> mLeaderBoardItems;
+	private LeaderBoardItemHolder mUserStandings;
+	private Runnable mItemsRun = new Runnable() {
+		@Override
+		public void run() {
+			//If the list returned is updated, clear the previous elements from adapter
+			if(mLeaderBoardItems.size() > 0 && mLeaderBoardItems.get(0).pos == 0)
+				mLeaderBoardItemsList.clear();
+			mLeaderBoardItemsList.addAll(mLeaderBoardItems);
+			mLeaderBoardAdapter.notifyDataSetChanged();
+			
+
+			updateUserStandings();
+		}
+	};
+	public void addLeaderBoardItems(final LeaderBoardHolder pLeaderBoard){
+		//Add messages to history
+		if(mCached[pLeaderBoard.type] == null)
+			mCached[pLeaderBoard.type] = new ArrayList<LeaderBoardItemHolder>();
+		//If the list returned is updated, we clear the previously cached memory
+		if(pLeaderBoard.lb.size() > 0 && pLeaderBoard.lb.get(0).pos == 0)
+			mCached[pLeaderBoard.type].clear();
+		mCached[pLeaderBoard.type].addAll(pLeaderBoard.lb);
+		
+		mLastTicks[pLeaderBoard.type] = pLeaderBoard.ticks;
+		
+		//We are in different scoreboard type, do not affect the list
+		if(pLeaderBoard.type != leaderBoardType)
+			return;
+		
+		mLeaderBoardItems = (ArrayList)pLeaderBoard.lb;
+		mUserStandings = pLeaderBoard.user;
+		
+		mAct.runOnUiThread(mItemsRun);
+	}
+	
+	private void updateUserStandings(){
+		if(mUserStandings == null)
+			return ;
+		final View standings = findViewById(R.id.user_standings);
+		//final LeaderBoardItemHolder userStandings = mUserStandings;
+		((TextView)standings.findViewById(R.id.tv_position)).setText((mUserStandings.pos + 1) + "");
+		((TextView)standings.findViewById(R.id.tv_nick)).setText(mUserStandings.nk);
+		((TextView)standings.findViewById(R.id.tv_coins)).setText(mUserStandings.c + "");
+		((TextView)standings.findViewById(R.id.tv_time_played)).setText(mUserStandings.tp + "");
+		((TextView)standings.findViewById(R.id.tv_level)).setText(mUserStandings.lv + "");
+		if(mUserStandings.av == -1 && mUserStandings.fb != null){
+			FacebookManager.getInstance(mAct).downloadProfilePicture( mUserStandings.fb , FacebookManager.TYPE_LARGE, false, new IOnImageDownloadListener() {
+				@Override
+				public void onImageDownloaded(Bitmap pBitmap) {
+					//if(userStandings.nk !=)
+					pBitmap = ImageUtils.resizeBitmap(pBitmap, 220, 220, true);
+					((ImageView)standings.findViewById(R.id.iv_avatar)).setImageBitmap(pBitmap);
+				}
+				@Override
+				public void onImageDownloadCanceled() {
+				}
+			});
+		}
+		else{	//Use custom avatar
+			if(mUserStandings.av == -1)
+				mUserStandings.av = 0;
+			((ImageView)standings.findViewById(R.id.iv_avatar)).setImageResource(C.DRAWABLES_AVATARS[mUserStandings.av]);
+		}
+	}
+	
+	public void showLeaderBoard(){
+		mAct.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				//Populate messages from history
+				mLeaderBoardItemsList.clear();
+				if(mCached[leaderBoardType] != null)
+					mLeaderBoardItemsList.addAll(mCached[leaderBoardType]);
+				mLeaderBoardAdapter.notifyDataSetChanged();
+				
+				if(mOnRequestLeaderBoard != null){
+					int start = 0;
+					if(mCached[leaderBoardType] != null)
+						start = mCached[leaderBoardType].size();
+					mOnRequestLeaderBoard.requestLeaderBoard(start, ITEMS_PER_PAGE, leaderBoardType, mLastTicks[leaderBoardType]);
+				}
+			
+				setVisibility(View.VISIBLE);
+				bringToFront();
+			}
+		});
+	}
+	
+	public void hideLeaderBoard(){
+		mAct.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				setVisibility(View.INVISIBLE);
+			}
+		});
+	}
+
+	private float mWidth, mHeight;
+	private Runnable mSizeRun = new Runnable() {
+		
+		@Override
+		public void run() {
+			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+			
+			params.width = (int) mWidth;
+			params.height = (int) mHeight;
+		
+			setLayoutParams(params);
+		}
+	};
+	public void setSize(float pWidth, float pHeight){
+		mWidth = pWidth * mAdjustX;
+		mHeight = pHeight * mAdjustY;
+		
+		mAct.runOnUiThread(mSizeRun);
+	}
+	
+	private float mScaleX, mScaleY;
+	private Runnable mScaleRun = new Runnable() {
+		
+		@Override
+		public void run() {
+			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+			
+			params.width = (int) (mWidth * mScaleX);
+			params.height = (int) (mHeight * mScaleY);
+			
+			setLayoutParams(params);
+			
+			setPositionAfterScale();
+		}
+	};
+	public void setScale(float pScaleX, float pScaleY){
+		mScaleX = pScaleX;
+		mScaleY = pScaleY;
+		
+		mAct.runOnUiThread(mScaleRun);
+	}
+	private void setPositionAfterScale(){
+		RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+		
+		params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+		params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+		
+		int left = (int) (mX - params.width * 0.5f);
+		int top = (int) (mY - params.height * 0.5f);
+		params.setMargins(left, top, left, top);
+		
+		setLayoutParams(params);
+	}
+	
+
+	private float mX, mY;
+	private Runnable mPosRun = new Runnable() {
+		@Override
+		public void run() {
+			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) getLayoutParams();
+			
+			params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+			params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+			params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+			
+			int left = (int) (mX - mWidth * 0.5f);
+			int top = (int) (mY - mHeight * 0.5f);
+			params.setMargins(left, top, left, top);
+			
+			setLayoutParams(params);
+		}
+	};
+	public void setPosition(float pX, float pY){
+		mX = pX * mAdjustX;
+		mY = pY * mAdjustY;
+		
+		mAct.runOnUiThread(mPosRun);
+	}
+	
+	private IOnRequestLeaderBoard mOnRequestLeaderBoard;
+	public void setOnRequestLeaderBoard(IOnRequestLeaderBoard pListener){
+		mOnRequestLeaderBoard = pListener;
+	}
+	//We send a request for board items between [start, end), with type.
+	//If the last fetched date is < last updated time, the server sends back the interval 0, start + amount
+	public interface IOnRequestLeaderBoard{
+		public void requestLeaderBoard(int start, int amount, int type, long lastTicks);
+	}
+}

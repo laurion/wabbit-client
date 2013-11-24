@@ -1,0 +1,18 @@
+package com.hackathon.remoting;
+
+public class GPlusManager {
+	private GPlusManager(){
+		
+	}
+	private static GPlusManager _instance;
+	private static GameHelper mGameHelper;
+	public static GPlusManager getInst(GameHelper helper){
+		if(_instance == null){
+			_instance = new GPlusManager();
+		}
+		mGameHelper = helper;
+		return _instance;
+	}
+	
+	
+}

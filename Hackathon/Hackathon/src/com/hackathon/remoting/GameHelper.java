@@ -18,9 +18,11 @@ package com.hackathon.remoting;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
-
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -51,7 +53,11 @@ import com.google.android.gms.games.leaderboard.LeaderboardVariant;
 import com.google.android.gms.games.leaderboard.OnLeaderboardScoresLoadedListener;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.plus.PlusClient;
+import com.google.android.gms.plus.PlusClient.OnPeopleLoadedListener;
+import com.google.android.gms.plus.model.people.Person;
+import com.google.android.gms.plus.model.people.PersonBuffer;
 import com.hackathon.R;
+import com.yoero.base.errorHandling.Reporter;
 
 public class GameHelper  implements GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener {
@@ -212,7 +218,7 @@ public class GameHelper  implements GooglePlayServicesClient.ConnectionCallbacks
      * CLIENT_GAMES client.
      */
     public void setup(GameHelperListener listener) {
-        setup(listener, CLIENT_GAMES);
+        setup(listener, CLIENT_PLUS);
     }
 
     /**
@@ -434,7 +440,7 @@ public class GameHelper  implements GooglePlayServicesClient.ConnectionCallbacks
 		if(isSignedIn())
 			mActivity.startActivityForResult(getGamesClient().getAchievementsIntent(), REQUEST_ACHIEVEMENT);
 		else
-			showSignInDialog(null);
+			showSignInDialog();
 	}
     
 	/**
@@ -485,19 +491,19 @@ public class GameHelper  implements GooglePlayServicesClient.ConnectionCallbacks
 		if(isSignedIn())
 			mActivity.startActivityForResult(getGamesClient().getLeaderboardIntent(leaderboardId), REQUEST_LEADERBOARD);
 		else
-			showSignInDialog(leaderboardId);
+			showSignInDialog();
 	}
 	
 	private AlertDialog mSignInDialog;
-    public void showSignInDialog(String leaderboard){
+    public void showSignInDialog(){
     	//Pass leaderboardId to show leaderboard in case of successfull login
-    	mLeaderboardId = leaderboard;
+    	//mLeaderboardId = leaderboard;
     	
     	if(mSignInDialog == null){
 	    	AlertDialog.Builder alert = new AlertDialog.Builder(mActivity);
 	
 			alert.setTitle("Sign In");
-			alert.setMessage("In order to have acces the Leaderboard you first have to Sign In");
+			alert.setMessage("Google + signin");
 	
 			alert.setPositiveButton("Sign In", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
@@ -1289,4 +1295,32 @@ public class GameHelper  implements GooglePlayServicesClient.ConnectionCallbacks
         sb.append("0123456789ABCDEF".substring(lo, lo + 1));
     }
 
+    public HashSet<String> friends = new HashSet<String>();
+    public PersonBuffer mPeople;
+    public void loadPersons(final Runnable pCallback, final ArrayList<String> ids){
+    	final OnPeopleLoadedListener onGetInfo = new OnPeopleLoadedListener() { 
+			@Override
+			public void onPeopleLoaded(ConnectionResult status, PersonBuffer personBuffer, String nextPageToken) {
+				mPeople = personBuffer;
+				if(pCallback != null)
+					pCallback.run();
+			}
+		};
+		
+    	final OnPeopleLoadedListener listener = new OnPeopleLoadedListener() { 
+			@Override
+			public void onPeopleLoaded(ConnectionResult status, PersonBuffer personBuffer, String nextPageToken) { 
+				friends.clear();
+				for(int i = 0; i < personBuffer.getCount(); i ++){
+					Person p = personBuffer.get(i);
+					friends.add(p.getId());
+				}
+				//ids.add("100644384352359833242");
+				//Reporter.addToLog("XXX " + ids.toString());
+				if(ids.size() > 0)
+					getPlusClient().loadPeople(onGetInfo, ids);
+			}
+		};
+    	getPlusClient().loadVisiblePeople(listener, null);
+    }
 }

@@ -1,0 +1,8 @@
+package com.hackathon.lists;
+
+import android.graphics.Bitmap;
+
+public class ListItemHolder {
+	public Bitmap avatar;
+	public String name;
+}

@@ -1,5 +1,12 @@
 package com.hackathon.remoting;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.prefs.Preferences;
 
 import org.json.JSONArray;
@@ -21,6 +28,12 @@ import com.yoero.base.remoting.IRemoteCallback;
 import com.yoero.base.remoting.RemoteCallHolder;
 
 public class ClientManager {
+	//public static String POST_MAC = "http://wabbit.herokuapp.com/users/";
+	//public static String GET_PEOPLE = "http://wabbit.herokuapp.com/people";
+	
+	public static String POST_MAC = "http://wabbit.herokuapp.com/users/";
+	public static String GET_PEOPLE = "http://wabbit.herokuapp.com/people";
+	
 	private static ClientManager instance;
 
 	private Activity mMainAct;
@@ -77,6 +90,9 @@ public class ClientManager {
 
 	public void setGCMDeviceId(final String GCMDeviceId) {
 		getComInst().setGCMDeviceId(mGCMDeviceIdCallback, GCMDeviceId);
+	}
+	public void loadFriends(IRemoteCallback call){
+		getComInst().loadFriends(call);
 	}
 
 	
@@ -155,5 +171,24 @@ public class ClientManager {
 		}
 	};
 
+	public static String convertStreamToString(InputStream inputStream) throws IOException {
+        if (inputStream != null) {
+            Writer writer = new StringWriter();
+
+            char[] buffer = new char[1024];
+            try {
+                Reader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"),1024);
+                int n;
+                while ((n = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, n);
+                }
+            } finally {
+                inputStream.close();
+            }
+            return writer.toString();
+        } else {
+            return "";
+        }
+    }
 
 }

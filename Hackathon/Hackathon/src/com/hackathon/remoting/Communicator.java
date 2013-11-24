@@ -1,9 +1,11 @@
 package com.hackathon.remoting;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 
 import ch.boye.httpclientandroidlib.androidextra.Base64;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.hackathon.abstracts.Enums.LoginResult;
 import com.hackathon.dataholders.LoginDataHolder;
 import com.hackathon.dataholders.StatusDataHolder;
@@ -93,5 +95,14 @@ public class Communicator extends CommunicatorBase {
 		CallExecutor exec = new CallExecutor();
 		
 		exec.executeCall(this, req, StatusDataHolder.class);
+	}
+	
+	public void loadFriends(IRemoteCallback call){
+		final RemoteCallHolder req = buildRequest(call, "BingoApi/SetGCMDeviceId",
+				"uid", LoginData.UserId);
+
+		CallExecutor exec = new CallExecutor();
+		
+		exec.executeCall(this, req, new TypeReference<ArrayList<String>>(){});
 	}
 }

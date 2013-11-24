@@ -3,6 +3,7 @@ package com.hackathon.imagesutils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -12,6 +13,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+
+import com.hackathon.imagesutils.ImageDownloader.IOnImageDownloadListener;
+import com.hackathon.imagesutils.ImageDownloader.ImageDownloaderPacker;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -111,6 +115,32 @@ public class ImageUtils {
 		//	pBitmap.recycle();
 		
 		return Bitmap.createScaledBitmap(pBitmap, pWIdth, pHeight, false);
+	}
+	
+	private static HashMap<String, Bitmap> images = new HashMap<String, Bitmap>();
+	public static void downloadProfilePicture(final String url, final IOnImageDownloadListener pListener){
+		final IOnImageDownloadListener listner = new IOnImageDownloadListener() { 
+			@Override
+			public void onImageDownloaded(Bitmap pBitmap) { 
+				images.put(url, pBitmap);
+				if(pListener != null)
+					pListener.onImageDownloaded(pBitmap);
+			}
+			@Override
+			public void onImageDownloadCanceled() { 
+				if(pListener != null)
+					pListener.onImageDownloadCanceled();
+			}
+		};
+		if(images.containsKey(url)){
+			if(pListener != null)
+				pListener.onImageDownloaded(images.get(url));
+		}
+		else
+			//Try to download the desired picture
+			(new ImageDownloader()).execute(
+					new ImageDownloaderPacker(
+							url, listner));
 	}
 	
 }

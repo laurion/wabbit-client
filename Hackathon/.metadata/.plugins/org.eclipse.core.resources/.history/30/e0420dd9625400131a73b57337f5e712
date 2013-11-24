@@ -1,0 +1,7 @@
+package com.hackathon.dataholders;
+
+public class user {
+	public String google_id;
+	public String mac_addr;
+	public String uid;
+}

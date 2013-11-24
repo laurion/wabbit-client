@@ -1,0 +1,191 @@
+package com.hackathon.remoting;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.prefs.Preferences;
+
+import org.json.JSONArray;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.text.InputType;
+import android.util.Log;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.hackathon.abstracts.Enums.GeneralResult;
+import com.hackathon.abstracts.Enums.LoginResult;
+import com.hackathon.dataholders.StatusDataHolder;
+import com.hackathon.dataholders.UserDataHolder;
+import com.yoero.base.UtilFunctions;
+import com.yoero.base.remoting.IRemoteCallback;
+import com.yoero.base.remoting.RemoteCallHolder;
+
+public class ClientManager {
+	public static String POST_MAC = "http://10.11.69.225:3000/users/";
+	public static String GET_PEOPLE = "http://10.11.69.225:3000/people";
+	
+	private static ClientManager instance;
+
+	private Activity mMainAct;
+
+	// Data
+	public UserDataHolder mUserData;
+
+	public static synchronized ClientManager getInstance(Activity activity) {
+		if (instance == null) {
+			instance = new ClientManager(activity);
+		}
+
+		return instance;
+	}
+
+	private ClientManager(final Activity activity) {
+		mMainAct = activity;
+
+		// common one time initializations
+		RemoteCallHolder.initHandler();
+		Communicator.inst = new Communicator();
+	}
+
+	public void destroy() {
+		instance = null;
+	}
+
+	public Communicator getComInst() {
+		return Communicator.inst;
+	}
+
+	public void launchLogin(String userEmail, String userPw) {
+		//Communicator.getLoginData().Result = LoginResult.Logout;
+		//String userEmail = UtilFunctions.getAccountEmail(mMainAct);
+
+		processLogin(userEmail, userPw,
+				mLoginCallBack);
+	}
+
+	private void processLogin(String email, String password,
+			IRemoteCallback pCallBack) {
+		String deviceId = UtilFunctions.getDeviceId(mMainAct);
+		String deviceEmail = UtilFunctions.getAccountEmail(mMainAct);
+
+		getComInst().userLogin(pCallBack,
+				UtilFunctions.getVersionCode(mMainAct),
+				deviceId + "\n" + deviceEmail, email, password);
+	}
+
+
+	public void getUserData(IRemoteCallback pCallBack) {
+		getComInst().getUserData(pCallBack);
+	}
+
+	public void setGCMDeviceId(final String GCMDeviceId) {
+		getComInst().setGCMDeviceId(mGCMDeviceIdCallback, GCMDeviceId);
+	}
+	public void loadFriends(IRemoteCallback call){
+		getComInst().loadFriends(call);
+	}
+
+	
+
+	// Login
+	private final IRemoteCallback mLoginCallBack = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			if (Communicator.getLoginData().Result == LoginResult.Success) {
+				//getInitialSettings(mInitialSettings);
+			} else if (rch.parsedResult == null) {
+				UtilFunctions.ShowMessageBox(mMainAct, "Server error",
+						"Please try again later or contact technical support!",
+						"OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								mMainAct.finish();
+							}
+						}, null, null, false);
+			} else if (Communicator.getLoginData().Result == LoginResult.UpdateRequired) {
+				//ApplicationUpdate.requestUpdate(mMainAct, null);
+			} else if (Communicator.getLoginData().Result == LoginResult.WrongPassword) {
+				AlertDialog alert = new AlertDialog.Builder(mMainAct).create();
+
+				alert.setTitle("Wrong password");
+				alert.setMessage("Please type-in the correct password !");
+
+				// Set an EditText view to get user input
+				final EditText input = new EditText(mMainAct);
+				input.setHint("Password");
+				input.setInputType(InputType.TYPE_CLASS_TEXT
+						| InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+				alert.setView(input);
+				alert.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				    	/*String pw = input.getText().toString();
+						// Save password
+						Preferences.setPassword(
+								UtilFunctions.getAccountEmail(mMainAct), 
+								pw);
+
+						// Try another login
+						launchLogin();
+						*/
+				    }
+				 });
+				
+				alert.setButton(DialogInterface.BUTTON_NEUTRAL, "Recover password", new DialogInterface.OnClickListener() {
+				     @Override
+				     public void onClick(DialogInterface dialog, int which) {
+				    	 //recoverPassword(mRecoverPW);
+				     }
+				});
+				
+				alert.setButton(DialogInterface.BUTTON_NEGATIVE, "No, logout", new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				    	mMainAct.finish(); // Close app
+				    }
+				});
+				alert.show();
+			}
+		}
+	};
+
+	
+
+	// After updating GCMDeviceId in user data
+	private final IRemoteCallback mGCMDeviceIdCallback = new IRemoteCallback() {
+		@Override
+		public void onResult(RemoteCallHolder rch) {
+			StatusDataHolder status = (StatusDataHolder) rch.parsedResult;
+		}
+	};
+
+	public static String convertStreamToString(InputStream inputStream) throws IOException {
+        if (inputStream != null) {
+            Writer writer = new StringWriter();
+
+            char[] buffer = new char[1024];
+            try {
+                Reader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"),1024);
+                int n;
+                while ((n = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, n);
+                }
+            } finally {
+                inputStream.close();
+            }
+            return writer.toString();
+        } else {
+            return "";
+        }
+    }
+
+}

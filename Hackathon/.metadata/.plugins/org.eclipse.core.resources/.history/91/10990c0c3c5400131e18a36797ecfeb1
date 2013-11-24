@@ -1,0 +1,120 @@
+package com.hackathon.lists;
+
+import java.util.List;
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.hackathon.R;
+import com.hackathon.imagesutils.ImageDownloader.IOnImageDownloadListener;
+import com.hackathon.imagesutils.ImageUtils;
+
+public class UsersListAdapter extends ArrayAdapter {
+
+	private Activity mActivity;
+	public UsersListAdapter(Context context, List objects) {
+		super(context, R.layout.list_item, objects);
+	}
+	
+	public void setActivity(Activity act){
+		mActivity = act;
+	}
+	 
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+    	Log.v("xxxxxxx: ", position + " " + getCount());
+    	if(getCount() == 1 || position == getCount() - 1){
+    		if(convertView == null || convertView != null && convertView.getId() != 3111111){
+    			convertView = View.inflate(getContext(), R.layout.list_item_load_more, null);
+    			convertView.setId(3111111);
+    		}
+    		return convertView;
+    	}
+    	//If the list changed, but view remained inflated not for the last element, desinflate view
+    	if(convertView != null && convertView.getId() == 3111111){
+    		convertView = null;
+    	}
+        // retrieve the Person object binded at this position
+        final LeaderBoardItemHolder itemHolder = (LeaderBoardItemHolder) getItem(position);
+ 
+        // A ViewHolder keeps references to children views to avoid unneccessary
+        // calls
+        // to findViewById() on each row.
+        final ViewHolder holder;
+ 
+        // When convertView is not null, we can reuse it directly, there is no
+        // need
+        // to reinflate it. We only inflate a new View when the convertView
+        // supplied
+        // by ListView is null.
+        if (convertView == null) {
+            convertView = View.inflate(getContext(), R.layout.list_item_leaderboard, null);
+ 
+            // Creates a ViewHolder and store references to the two children
+            // views
+            // we want to bind data to.
+            holder = new ViewHolder();
+            holder.position = (TextView) convertView.findViewById(R.id.tv_position);
+            holder.nick = (TextView) convertView.findViewById(R.id.tv_nick);
+            holder.coins = (TextView) convertView.findViewById(R.id.tv_coins);
+            holder.timePlayed = (TextView) convertView.findViewById(R.id.tv_time_played);
+            holder.level = (TextView) convertView.findViewById(R.id.tv_level);
+            holder.avatar = (ImageView) convertView.findViewById(R.id.iv_avatar);
+            convertView.setTag(holder);
+        } else {
+            // Get the ViewHolder back to get fast access to the TextView
+            // and the ImageView.
+            holder = (ViewHolder) convertView.getTag();
+        }
+ 
+        // Bind the data efficiently with the holder.
+        holder.position.setText((itemHolder.pos + 1) + "");
+        holder.nick.setText(itemHolder.nk);
+        holder.coins.setText(itemHolder.c + "");
+        holder.timePlayed.setText(itemHolder.tp + "");
+        holder.level.setText(itemHolder.lv + "");
+        
+        if(itemHolder.av == -1 && itemHolder.fb != null){
+			FacebookManager.getInstance(mActivity).downloadProfilePicture( itemHolder.fb , FacebookManager.TYPE_LARGE, false, new IOnImageDownloadListener() {
+				@Override
+				public void onImageDownloaded(Bitmap pBitmap) {
+					pBitmap = ImageUtils.resizeBitmap(pBitmap, 220, 220, true);
+					holder.avatar.setImageBitmap(pBitmap);
+				}
+				@Override
+				public void onImageDownloadCanceled() {
+				}
+			});
+		}
+		else{	//Use custom avatar
+			if(itemHolder.av == -1)
+				itemHolder.av = 0;
+			holder.avatar.setImageResource(C.DRAWABLES_AVATARS[itemHolder.av]);
+		}
+
+        return convertView;
+    }
+    
+    @Override
+    public int getCount(){
+    	return super.getCount() + 1;
+    }
+	 
+    /**
+     *
+     * Inner holder class for a single row view in the ListView
+     *
+     */
+    static class ViewHolder {
+        TextView position, coins, timePlayed, level, nick;
+        ImageView avatar;
+    }
+
+}

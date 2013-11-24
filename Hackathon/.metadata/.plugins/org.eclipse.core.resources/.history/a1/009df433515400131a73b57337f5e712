@@ -1,0 +1,20 @@
+package com.hackathon.remoting;
+
+import com.google.android.gms.plus.model.people.PersonBuffer;
+
+public class GPlusManager {
+	private GPlusManager(){
+		
+	}
+	private static GPlusManager _instance;
+	private static GameHelper mGameHelper;
+	public static GPlusManager getInst(GameHelper helper){
+		if(_instance == null){
+			_instance = new GPlusManager();
+		}
+		mGameHelper = helper;
+		return _instance;
+	}
+	public PersonBuffer
+	public void run
+}

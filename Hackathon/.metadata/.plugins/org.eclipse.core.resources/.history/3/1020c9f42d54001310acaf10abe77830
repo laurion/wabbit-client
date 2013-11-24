@@ -1,0 +1,22 @@
+package com.hackathon.activity;
+
+import android.os.Bundle;
+import android.widget.Toast;
+
+import com.hackathon.R;
+
+public class StartActivity extends BaseActivity{
+	@Override
+	public void onCreate(Bundle savedExtras){
+		super.onCreate(savedExtras);
+		
+		setContentView(R.layout.login_layout);
+		
+		if(mGameHelper.isSignedIn()){
+			Toast.makeText(this, mGameHelper.getGamesClient().getCurrentAccountName(), Toast.LENGTH_LONG).show();
+		}
+		else{
+			mGameHelper.showSignInDialog(null);
+		}
+	}
+}

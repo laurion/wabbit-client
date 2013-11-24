@@ -1,0 +1,260 @@
+package com.hackathon.activity;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.plus.model.people.Person;
+import com.hackathon.R;
+import com.hackathon.dataholders.user;
+import com.hackathon.imagesutils.ImageDownloader.IOnImageDownloadListener;
+import com.hackathon.imagesutils.ImageUtils;
+import com.hackathon.lists.ListItemHolder;
+import com.hackathon.lists.UsersListAdapter;
+import com.hackathon.remoting.ClientManager;
+import com.yoero.base.UtilFunctions;
+import com.yoero.base.errorHandling.Reporter;
+import com.yoero.base.remoting.IRemoteCallback;
+import com.yoero.base.remoting.RemoteCallHolder;
+
+public class MainActivity  extends BaseActivity{
+	private ListView mListView;
+	private UsersListAdapter mListAdapter;
+	private List mListItems;
+	
+	@Override
+	public void onCreate(Bundle savedExtras){
+		super.onCreate(savedExtras);
+		
+		Reporter.setErrorReporting(this);
+		
+		setContentView(R.layout.main_layout);
+		
+		mGameHelper.beginUserInitiatedSignIn();
+		mGameHelper.getPlusClient().connect();
+		//pushUserData();
+		//createList();
+		//updateItems();
+		
+		//Start bluetooth
+		final BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); 
+		DialogInterface.OnClickListener yes = new DialogInterface.OnClickListener() { 
+			@Override
+			public void onClick(DialogInterface dialog, int which) { 
+				Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); 
+				discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);//0 for unlimited, and anything else for seconds (I think)
+				startActivity(discoverableIntent);
+				mBluetoothAdapter.enable();
+			}
+		};
+		
+		DialogInterface.OnClickListener no = new DialogInterface.OnClickListener() { 
+			@Override
+			public void onClick(DialogInterface dialog, int which) { 
+				finish();
+			}
+		};
+		if (mBluetoothAdapter.isEnabled()) {
+		    
+		}
+		else{
+			UtilFunctions.ShowMessageBox(this, "Bluetooth on/off", "Service not available. Bluetooth turned off. Turn on bluetooth?",
+					"Yes", yes, "Cancel", no, false);
+		}
+	}
+	
+	private String getMacAdress(){
+		WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		WifiInfo info = manager.getConnectionInfo();
+		String address = info.getMacAddress();
+		return address;
+	}
+	private void pushUserData(){
+		Runnable postr = new Runnable() { 
+			@Override
+			public void run() {
+				// Create a new HttpClient and Post Header
+			    HttpClient httpclient = new DefaultHttpClient();
+			    HttpPost httppost = new HttpPost(ClientManager.POST_MAC);
+
+			    try {
+			        user u = new user();
+			        u.google_id = mGameHelper.getPlusClient().getCurrentPerson().getId();
+			        u.mac_addr = getMacAdress();
+			        String json = "{\"user\":" +  u.toJson() + "}";
+			        StringEntity se = new StringEntity(json);
+			        httppost.setEntity(se);
+
+			        // Execute HTTP Post Request
+			        HttpResponse response = httpclient.execute(httppost);
+			        
+			    } catch (ClientProtocolException e) {
+			        // TODO Auto-generated catch block
+			    } catch (IOException e) {
+			        // TODO Auto-generated catch block
+			    }
+			}
+		};
+		new Thread(postr).start();
+	}
+	private void createList(){
+		mListView = (ListView) findViewById(R.id.usersList);
+		mListItems = new ArrayList();
+		
+		mListAdapter = new UsersListAdapter(this, mListItems);
+		mListView.setAdapter(mListAdapter);
+		
+		mListView.setOnItemClickListener(clickListener);
+	}
+	
+	public void updateItems(){
+		mListItems.clear();
+		
+		final Runnable onPeopleLoaded = new Runnable() { 
+			@Override
+			public void run() { 
+				for(int i = 0; i < mGameHelper.mPeople.getCount(); i ++){
+					Person p = mGameHelper.mPeople.get(i);
+					if(p == null)
+						continue;
+					String imageurl = "https://plus.google.com/s2/photos/profile/" + p.getId() +  "?sz=180";
+					ListItemHolder item = new ListItemHolder(p.getId(), imageurl, p.getDisplayName(), mGameHelper.friends.contains(p.getId()));
+					//Toast.makeText(MainActivity.this, item.toString(), Toast.LENGTH_LONG).show();
+					mListItems.add(item);
+				}
+				mListAdapter.notifyDataSetChanged();
+			}
+		};
+		
+		final Runnable getPeople = new Runnable() {
+			@Override
+			public void run() { 
+				HttpResponse response = null;
+				try {   
+				        HttpClient client = new DefaultHttpClient();
+				        HttpGet request = new HttpGet();
+				        request.setURI(new URI(ClientManager.GET_PEOPLE + ".json"));
+				        response = client.execute(request);
+				    } catch (URISyntaxException e) {
+				        e.printStackTrace();
+				    } catch (ClientProtocolException e) {
+				        // TODO Auto-generated catch block
+				        e.printStackTrace();
+				    } catch (IOException e) {
+				        // TODO Auto-generated catch block
+				        e.printStackTrace();
+				    }
+				if(response != null){
+					try {
+						String json = ClientManager.convertStreamToString(response.getEntity().getContent());
+						try {
+							JSONArray jsonObj = new JSONArray(json);
+							ArrayList<String> ids = new ArrayList<String>();
+							for(int i = 0; i < jsonObj.length(); i ++){
+								JSONObject obj = new JSONObject(jsonObj.getJSONObject(i).toString());
+								String id = obj.get("google_id").toString();
+								if(id.equals(mGameHelper.getPlusClient().getCurrentPerson().getId()) == false)
+									ids.add( id );
+							}
+							mGameHelper.loadPersons(onPeopleLoaded, ids);
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} catch (IllegalStateException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		new Thread(getPeople).start();
+	}
+	
+	private void updateUserData(){
+		String imageurl = "https://plus.google.com/s2/photos/profile/" + mGameHelper.getPlusClient().getCurrentPerson().getId() +  "?sz=260";
+		ImageUtils.downloadProfilePicture(imageurl, new IOnImageDownloadListener() { 
+			@Override
+			public void onImageDownloaded(Bitmap pBitmap) { 
+				((ImageView)findViewById(R.id.myImage)).setImageBitmap(pBitmap);
+			}
+			@Override
+			public void onImageDownloadCanceled() { 
+			}
+		});
+		((TextView)findViewById(R.id.myName)).setText( mGameHelper.getPlusClient().getCurrentPerson().getDisplayName() );
+	}
+	Handler handler = new Handler();
+	@Override
+	public void onSignInSucceeded() {
+		pushUserData();
+		Runnable run = new Runnable() { 
+			@Override
+			public void run() {
+				updateUserData();
+				createList();
+				updateItems();
+				handler.postDelayed(this, 1000 * 60);
+				//Toast.makeText(MainActivity.this, "Loged in", Toast.LENGTH_LONG).show();
+			}
+		};
+		handler.removeCallbacks(run);
+		handler.postDelayed(run, 0);
+	}
+	@Override
+	public void onStop(){
+		super.onStop();
+		
+		handler = null;
+	}
+	
+	private OnItemClickListener clickListener = new OnItemClickListener() {
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+			ListItemHolder itemHolder = (ListItemHolder)mListItems.get(position);
+			if(itemHolder.isFriend){
+				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://plus.google.com/" + itemHolder.id)));
+			}
+			else{
+				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://plus.google.com/" + itemHolder.id + "/posts")));
+			}
+		}
+	};
+}

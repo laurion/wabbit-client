@@ -1,0 +1,15 @@
+package com.hackathon.lists;
+
+import android.graphics.Bitmap;
+
+public class ListItemHolder {
+	public Bitmap avatar;
+	public String name;
+	public boolean isFriend;
+	
+	public ListItemHolder(Bitmap bmp, String nm, boolean friend){
+		avatar = bmp;
+		name = nm;
+		isFriend = friend;
+	}
+}

@@ -1,0 +1,17 @@
+package com.hackathon.remoting;
+
+public class GPlusManager {
+	private GPlusManager(){
+		
+	}
+	private static GPlusManager _instance;;
+	public static GPlusManager getInst(){
+		if(_instance == null){
+			_instance = new GPlusManager();
+		}
+		return _instance;
+	}
+	
+	pu
+	
+}

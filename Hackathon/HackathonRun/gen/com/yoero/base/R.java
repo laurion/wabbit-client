@@ -21,8 +21,8 @@ public final class R {
 		public static final int ratings_body1 = 0x7f06001a;
 	}
 	public static final class drawable {
-		public static final int ic_launcher = 0x7f02003a;
-		public static final int ic_action_search = 0x7f020039;
+		public static final int ic_launcher = 0x7f02001b;
+		public static final int ic_action_search = 0x7f02001a;
 		public static final int base_btn_green = 0x7f020001;
 		public static final int base_btn_black = 0x7f020000;
 	}

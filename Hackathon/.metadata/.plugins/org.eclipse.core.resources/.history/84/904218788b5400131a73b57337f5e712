@@ -1,0 +1,5 @@
+package com.hackathon.remoting;
+
+public class JsonHelper {
+
+}
